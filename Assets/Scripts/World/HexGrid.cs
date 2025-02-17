@@ -6,15 +6,24 @@ public class HexGrid : MonoBehaviour
     public int mapWidth = 10;
     public int mapHeight = 10;
     public float tileSize = 1;
-    public GameObject tilePrefab;
+    public GameObject fairwayPrefab;
     public GameObject outTilePrefab;
+    public GameObject sandPrefab;
+    public GameObject roughPrefab;
+    public GameObject greenPrefab;
 
     public Camera mainCam;
-    
+
+    //Noise Settings
+    [SerializeField] private float noiseFrequency = 100f;
+    [SerializeField] private float noiseThreshold = .5f;
+    [SerializeField] private float noiseSeed = 1234567;
+    [SerializeField] private float landNoiseSeed = 1234567;
+
+
+
     void Start()
     {
-
-        
 
         MakeMapGrid();
     }
@@ -28,24 +37,19 @@ public class HexGrid : MonoBehaviour
     private void Awake()
     {
 
-        int width = 10;
-        int height = 6;
-        float cellsize = 1f;
-
-
-
+      
     }
 
 
     void MakeMapGrid()
     {
 
-        if (tilePrefab == null)
+        if (fairwayPrefab == null)
         {
             return;
         }
 
-        SpriteRenderer renderer = tilePrefab.GetComponentInChildren<SpriteRenderer>();
+        SpriteRenderer renderer = fairwayPrefab.GetComponentInChildren<SpriteRenderer>();
 
         
             Vector3 size = renderer.bounds.size;
@@ -57,10 +61,9 @@ public class HexGrid : MonoBehaviour
 
         
 
-            mapWidth = Mathf.FloorToInt((camBounds.x) / (tileWidth * 0.75f));
+            mapWidth = Mathf.FloorToInt((camBounds.x) / (tileWidth * 0.75f)) + 2;
             mapHeight = Mathf.FloorToInt(camBounds.y / (tileHeight * 0.75f));
 
-        float widthCutoffCheck = 0;
         int tileHorizontalNum = 0;
 
 
@@ -70,9 +73,7 @@ public class HexGrid : MonoBehaviour
 
         for (int x = 0; x < mapWidth; x++)
         {
-            float xPos = x * tileSize * Mathf.Cos(Mathf.Deg2Rad * 30);
-
-            widthCutoffCheck = xPos;
+    
             tileHorizontalNum++;
             xEndPositionCoord = x * tileSize * Mathf.Cos(Mathf.Deg2Rad * 30);
         }
@@ -83,18 +84,17 @@ public class HexGrid : MonoBehaviour
         xTotalWidth = xTotalWidth / 2;
 
         // Calculate the starting X position (shift grid right to center)
-        float startX = -xTotalWidth ; // Shifting right for even spacing
+        float startX = -xTotalWidth;
 
-        // Shift left to center the grid
-        // startX = -((gridWidth - tileWidth) * 0.5f);
 
+/*
         Debug.Log("TileNumberHorizontal: " + tileHorizontalNum);
 
         Debug.Log("Starting X position: " + startX);
 
 
         Debug.Log(camBounds.x);
-        Debug.Log("mapW: " + mapWidth);
+        Debug.Log("mapW: " + mapWidth);*/
 
 
         //Debug.Log(tileHeight);
@@ -114,8 +114,13 @@ public class HexGrid : MonoBehaviour
 
                 Vector3 hexCoords = GetHexCoords(x, z) + startPosition;
 
+
+
+
+
                 if(hexCoords.x - (tileWidth *0.75f) <= -camBounds.x *.5f || hexCoords.x + (tileWidth * 0.75f) >= camBounds.x * .5f)
                 {
+                    //This is setting the width tiles to the water tiles.
 
                     Vector3 position = new Vector3(hexCoords.x, hexCoords.y, 0);
 
@@ -127,10 +132,50 @@ public class HexGrid : MonoBehaviour
                 } else {
 
 
-                    Vector3 position = new Vector3(hexCoords.x, hexCoords.y, 0);
+                    if(hexCoords.y > (camBounds.y * 0.5f) - (4*tileHeight))
+                    {
 
-                    GameObject tile = Instantiate(tilePrefab, position, Quaternion.identity);
-                    tile.transform.parent = transform;
+                        Debug.Log("ABOVE Line");
+
+                    }
+                   // Debug.Log("Conditions for Green: " +( (camBounds.y * 0.5f) - (4 * tileHeight)));
+
+
+                    if (noiseSeed == -1)
+                    {
+                        noiseSeed = Random.Range(0, 100000);
+                    }
+
+
+
+                    float waterValue = Mathf.PerlinNoise((hexCoords.x * noiseSeed)/noiseFrequency,(hexCoords.y * noiseSeed) / noiseFrequency);
+
+                 //   Debug.Log("water Val: " + waterValue);
+                 //   Debug.Log("xPerlin: " + hexCoords.x / noiseFrequency + " . Yperlin: " + hexCoords.y / noiseFrequency);
+
+                    bool isWater = waterValue < noiseThreshold;
+                    if (isWater)
+                    {
+
+                        Vector3 positionWater = new Vector3(hexCoords.x, hexCoords.y, 0);
+
+                        GameObject tileWater = Instantiate(outTilePrefab, positionWater, Quaternion.identity);
+                        tileWater.transform.parent = transform;
+
+
+                        continue;
+
+                    } else
+                    {
+
+
+                        InitLandTile(hexCoords.x, hexCoords.y);
+
+
+                  
+
+                    }
+                    
 
 
 
@@ -157,6 +202,45 @@ public class HexGrid : MonoBehaviour
         float camWidth = camHeight * mainCam.aspect;
 
         return new Vector2(camWidth, camHeight);
+
+
+    }
+
+    private void InitLandTile(float xCoord, float yCoord)
+    {
+
+        if (landNoiseSeed == -1)
+        {
+            landNoiseSeed = Random.Range(0, 100000);
+        }
+
+        GameObject landtile;
+
+        float landValue = Mathf.PerlinNoise((xCoord * landNoiseSeed) / noiseFrequency, (yCoord * landNoiseSeed) / noiseFrequency);
+
+        if(landValue < 0.2)
+        {
+
+            landtile = sandPrefab;
+
+        } else if (landValue >= 0.2 && landValue < 0.7)
+        {
+            landtile = fairwayPrefab;
+
+
+        } else
+        {
+
+            landtile = roughPrefab;
+
+        }
+
+
+        Vector3 position = new Vector3(xCoord, yCoord, 0);
+
+        GameObject tile = Instantiate(landtile, position, Quaternion.identity);
+        tile.transform.parent = transform;
+
 
 
     }
