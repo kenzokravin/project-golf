@@ -8,6 +8,8 @@ public interface ITile
 
     void OnClick();
 
+    void OnConfirm();
+
     Vector2 GetCoordinates();
 
     Vector3 GetPosition();

@@ -55,7 +55,13 @@ public class SandHex : MonoBehaviour, ITile
     public void OnConfirm()
     {
 
+        if(selected)
+        {
 
+
+
+
+        }
 
 
 

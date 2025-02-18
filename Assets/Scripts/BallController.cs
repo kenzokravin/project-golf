@@ -35,7 +35,7 @@ public class BallController : MonoBehaviour
     {
 
         t = 0f;
-
+        hitSpeed = 4f;
         isMoving = true;
 
         startPoint = tileFrom.transform.position + ballSurfaceHeight;
@@ -67,8 +67,10 @@ public class BallController : MonoBehaviour
         if(isMoving)
         {
 
+            hitSpeed *= .98f;
             t += Time.deltaTime * hitSpeed;
             t = Mathf.Clamp01(t);
+            
 
             Vector3 pos = GetFlightPoint(startPoint, endPoint);
             transform.position = pos;
@@ -79,6 +81,9 @@ public class BallController : MonoBehaviour
             {
                 Debug.Log("They are close enough!");
                 gameObject.transform.position = endPoint;
+
+                
+
 
                 isMoving = false;
             }

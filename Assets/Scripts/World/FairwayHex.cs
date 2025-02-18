@@ -67,5 +67,20 @@ public class FairwayHex : MonoBehaviour, ITile
 
     }
 
+    public void OnConfirm()
+    {
+
+        if (selected)
+        {
+
+
+
+
+        }
+
+
+
+    }
+
 
 }

@@ -75,6 +75,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cfe9e87cdaf886240a3c18eb55aa6f37, type: 3}
       insertIndex: -1
       addedObject: {fileID: -2920511501525617636}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cfe9e87cdaf886240a3c18eb55aa6f37, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8511015100957215387}
   m_SourcePrefab: {fileID: 100100000, guid: cfe9e87cdaf886240a3c18eb55aa6f37, type: 3}
 --- !u!1 &6910912117343484790 stripped
 GameObject:
@@ -94,11 +97,52 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitHeight: 1
-  hitSpeed: 2
+  hitSpeed: 2.5
   startPoint: {x: 0, y: 0, z: 0}
   endPoint: {x: 0, y: 0, z: 0}
   ballSurfaceHeight: {x: 0, y: 0, z: -0.25}
   minHeight: 0.5
-  maxHeight: 3
+  maxHeight: 1.5
   t: 0
   isMoving: 0
+  jumpTime: 0.4
+--- !u!114 &8511015100957215387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6910912117343484790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dab5c7d4c32e743048dfca98e2d5914f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Spline:
+    m_EditModeType: 1
+    m_Knots: []
+    m_MetaData: []
+    m_Closed: 0
+    m_IntData:
+      m_Data: []
+    m_FloatData:
+      m_Data: []
+    m_Float4Data:
+      m_Data: []
+    m_ObjectData:
+      m_Data: []
+  m_Splines:
+  - m_EditModeType: 1
+    m_Knots: []
+    m_MetaData: []
+    m_Closed: 0
+    m_IntData:
+      m_Data: []
+    m_FloatData:
+      m_Data: []
+    m_Float4Data:
+      m_Data: []
+    m_ObjectData:
+      m_Data: []
+  m_Knots:
+    m_KnotsLink: []

@@ -48,4 +48,13 @@ public class WaterHex : MonoBehaviour, ITile
 
     }
 
+    public void OnConfirm()
+    {
+
+        
+
+
+
+    }
+
 }

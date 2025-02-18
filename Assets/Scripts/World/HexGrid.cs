@@ -216,6 +216,10 @@ public class HexGrid : MonoBehaviour
 
                         GameObject tileWater = Instantiate(outTilePrefab, positionWater, Quaternion.Euler(0, 0, 90));
                         tileWater.transform.parent = transform;
+
+                        ITile tileWaterScript = tileWater.GetComponent<ITile>();
+                        tileWaterScript.AssignCoordinate(x, z);
+
                         activeTiles.Add(tileWater);
 
                         continue;
@@ -405,12 +409,38 @@ public class HexGrid : MonoBehaviour
     public void SwapActiveHex(GameObject chosenHex)
     {
 
-       
+        if (chosenHex == currentBallTile) return;
        
         //Here would be where we could use the interface to check if the chosen hex is of a certain type (or we refer to the ball).
         //This could then trigger different states of the game/ball (i.e. stage is over, ball bounces, ball rolls etc)
 
-        ballController.Jump(currentBallTile,chosenHex);
+       // ballController.Jump(currentBallTile,chosenHex);
+
+        ITile tileScript = currentBallTile.GetComponent<ITile>();
+        tileScript.GetCoordinates();
+
+        for (int i = 0; i < activeTiles.Count; i++)
+        {
+
+            ITile loopTiles = activeTiles[i].GetComponent<ITile>();
+
+            if (loopTiles.GetCoordinates().x == (tileScript.GetCoordinates().x - 1))
+            {
+                if (loopTiles.GetCoordinates().y == (tileScript.GetCoordinates().y - 1))
+            {
+
+
+
+
+
+
+                }
+
+            }
+        }
+
+
+
 
 
         currentBallTile = chosenHex;
@@ -418,7 +448,19 @@ public class HexGrid : MonoBehaviour
     }
 
 
+    public GameObject RetreiveBallObj()
+    {
 
+        return ball;
+
+    }
+
+    public GameObject RetreiveCurrentBallTile()
+    {
+
+        return currentBallTile;
+
+    }
 
 
 

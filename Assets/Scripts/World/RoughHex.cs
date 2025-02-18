@@ -48,5 +48,14 @@ public class RoughHex : MonoBehaviour, ITile
 
     }
 
+    public void OnConfirm()
+    {
+
+        
+
+
+
+    }
+
 
 }
