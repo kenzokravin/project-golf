@@ -3,14 +3,15 @@ using UnityEngine;
 public class HexGrid : MonoBehaviour
 {
 
-    public int mapWidth = 10;
-    public int mapHeight = 10;
+    [SerializeField] public int mapWidth = 10;
+    [SerializeField] public int mapHeight = 10;
     public float tileSize = 1;
     public GameObject fairwayPrefab;
     public GameObject outTilePrefab;
     public GameObject sandPrefab;
     public GameObject roughPrefab;
     public GameObject greenPrefab;
+    public GameObject holePrefab;
 
     public Camera mainCam;
 
@@ -62,7 +63,9 @@ public class HexGrid : MonoBehaviour
         
 
             mapWidth = Mathf.FloorToInt((camBounds.x) / (tileWidth * 0.75f)) + 2;
-            mapHeight = Mathf.FloorToInt(camBounds.y / (tileHeight * 0.75f));
+           // mapHeight = Mathf.FloorToInt(camBounds.y / (tileHeight * 0.75f));
+
+        
 
         int tileHorizontalNum = 0;
 
@@ -104,7 +107,15 @@ public class HexGrid : MonoBehaviour
 
         Debug.Log("Lowest Y: " + lowestY);
 
+
+
+
         Vector3 startPosition = new Vector3(startX, -camBounds.y * .5f, 0);
+
+
+        Vector2 holeCoords = InitHole(startPosition, tileHorizontalNum);
+        Debug.Log("Hole Coords: " + holeCoords);
+
 
         for (int x = 0; x < mapWidth; x++)
         {
@@ -112,6 +123,16 @@ public class HexGrid : MonoBehaviour
 
             for(int z = 0; z < mapHeight; z++)
             {
+
+                //Checking the hole coords to ensure that it isn't overwritten.
+
+                if(holeCoords == new Vector2(x,z))
+                {
+
+                    Debug.Log("Matched: " + new Vector2(x, z));
+
+                    continue;
+                }
 
 
 
@@ -128,6 +149,8 @@ public class HexGrid : MonoBehaviour
                     Vector3 position = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f, 0.05f, waterValue / noiseThreshold)));
 
                     GameObject tile = Instantiate(outTilePrefab, position, Quaternion.Euler(0,0,90));
+                    ITile tileScript = tile.GetComponent<ITile>();
+                    tileScript.AssignCoordinate(x, z);
                     tile.transform.parent = transform;
 
 
@@ -172,21 +195,49 @@ public class HexGrid : MonoBehaviour
                     {
 
 
-                        InitLandTile(hexCoords.x, hexCoords.y, waterValue);
+                        InitLandTile(hexCoords.x, hexCoords.y, waterValue, x, z);
 
 
                   
 
                     }
-                    
-
-
-
-
+                   
                 }
             }
 
         }
+
+        
+
+
+
+
+
+
+    }
+
+    private Vector2 InitHole(Vector3 startPosition, int tileNumberHorizontal)
+    {
+
+
+        //Generate a Y Value between 23-28 (The green zone) and randomly select an x coord.
+        //Generate Tile based on this coord and the start position.
+        //Store coord values and skip generate when the generation loop encounters the hole value.
+
+        //Will have to find a range that is x tiles
+
+        int x = Random.Range(5, tileNumberHorizontal-5);
+        int z = Random.Range(22, 27);
+
+        Vector2 holeCoords = new Vector2(x, z);
+        Vector3 hexCoords = GetHexCoords(x, z) + startPosition;
+
+
+        GameObject holeTile = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,0), Quaternion.Euler(0, 0, 90));
+       // ITile tileScript = holeTile.GetComponent<ITile>();
+      //  tileScript.AssignCoordinate(x, z);
+
+        return holeCoords;
 
     }
 
@@ -209,7 +260,7 @@ public class HexGrid : MonoBehaviour
 
     }
 
-    private void InitLandTile(float xCoord, float yCoord, float waterValue)
+    private void InitLandTile(float xCoord, float yCoord, float waterValue, int x, int z)
     {
 
         if (landNoiseSeed == -1)
@@ -249,6 +300,8 @@ public class HexGrid : MonoBehaviour
         Vector3 position = new Vector3(xCoord, yCoord, -height);
 
         GameObject tile = Instantiate(landtile, position, Quaternion.Euler(0, 0, 90));
+        ITile tileScript = tile.GetComponent<ITile>();
+        tileScript.AssignCoordinate(x, z);
         tile.transform.parent = transform;
 
 

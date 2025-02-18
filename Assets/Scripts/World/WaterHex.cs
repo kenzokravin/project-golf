@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class FairwayHex : MonoBehaviour, ITile
+public class WaterHex : MonoBehaviour, ITile
 {
     [SerializeField] private string tileType;
     [SerializeField] private Vector2 coordinates;
@@ -8,13 +8,13 @@ public class FairwayHex : MonoBehaviour, ITile
 
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 
     public string GetTileType()
@@ -33,5 +33,4 @@ public class FairwayHex : MonoBehaviour, ITile
     {
 
     }
-
 }
