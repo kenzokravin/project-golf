@@ -4,7 +4,13 @@ public class ClickDetector : MonoBehaviour
 {
     [SerializeField] private GameObject clickedTile;
     [SerializeField] private bool selected = false;
-    
+
+    private HexGrid hexGrid;
+
+    private void Start()
+    {
+        hexGrid = GetComponent<HexGrid>();
+    }
 
     void Update()
     {
@@ -32,6 +38,9 @@ public class ClickDetector : MonoBehaviour
                    
                     selected = true;
                     clickable.OnClick();
+
+                    hexGrid.SwapActiveHex(hit.collider.gameObject);
+
                     clickedTile = hit.collider.gameObject;
                 }
             }
