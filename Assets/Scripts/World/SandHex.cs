@@ -51,4 +51,13 @@ public class SandHex : MonoBehaviour, ITile
     
 
     }
+
+    public Vector2 GetCoordinates()
+    {
+        return coordinates;
+
+    }
+
+
+
 }

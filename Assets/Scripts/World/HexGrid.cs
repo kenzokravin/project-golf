@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class HexGrid : MonoBehaviour
 {
@@ -12,6 +13,13 @@ public class HexGrid : MonoBehaviour
     public GameObject roughPrefab;
     public GameObject greenPrefab;
     public GameObject holePrefab;
+    public GameObject ballPrefab;
+
+
+
+    [SerializeField] GameObject holeTile;
+    [SerializeField] private int courseWidth;
+    [SerializeField] private Vector3 startTilePosition;
 
     public Camera mainCam;
 
@@ -20,6 +28,8 @@ public class HexGrid : MonoBehaviour
     [SerializeField] private float noiseThreshold = .5f;
     [SerializeField] private float noiseSeed = 1234567;
     [SerializeField] private float landNoiseSeed = 1234567;
+
+    [SerializeField] private List<GameObject> activeTiles;
 
 
 
@@ -82,6 +92,8 @@ public class HexGrid : MonoBehaviour
         }
 
 
+        courseWidth = tileHorizontalNum;
+
         float xTotalWidth = xEndPositionCoord - xStartPositionCoord;
 
         xTotalWidth = xTotalWidth / 2;
@@ -112,8 +124,12 @@ public class HexGrid : MonoBehaviour
 
         Vector3 startPosition = new Vector3(startX, -camBounds.y * .5f, 0);
 
+        startTilePosition = startPosition;
 
-        Vector2 holeCoords = InitHole(startPosition, tileHorizontalNum);
+
+        var result = GenerateHoleCoords(tileHorizontalNum);
+
+        Vector2 holeCoords = new Vector2(result.Item1,result.Item2);
         Debug.Log("Hole Coords: " + holeCoords);
 
 
@@ -126,13 +142,7 @@ public class HexGrid : MonoBehaviour
 
                 //Checking the hole coords to ensure that it isn't overwritten.
 
-                if(holeCoords == new Vector2(x,z))
-                {
-
-                    Debug.Log("Matched: " + new Vector2(x, z));
-
-                    continue;
-                }
+               
 
 
 
@@ -140,6 +150,20 @@ public class HexGrid : MonoBehaviour
 
 
                 float waterValue = Mathf.PerlinNoise((hexCoords.x * noiseSeed) / noiseFrequency, (hexCoords.y * noiseSeed) / noiseFrequency);
+
+
+                if (holeCoords == new Vector2(x, z))
+                {
+
+                    InitHole(startPosition, result.Item1,result.Item2, waterValue);
+
+
+
+                    Debug.Log("Matched: " + new Vector2(x, z));
+
+                    continue;
+                }
+
 
 
                 if (hexCoords.x - (tileWidth *0.75f) <= -camBounds.x *.5f || hexCoords.x + (tileWidth * 0.75f) >= camBounds.x * .5f)
@@ -152,6 +176,8 @@ public class HexGrid : MonoBehaviour
                     ITile tileScript = tile.GetComponent<ITile>();
                     tileScript.AssignCoordinate(x, z);
                     tile.transform.parent = transform;
+
+                    activeTiles.Add(tile);
 
 
 
@@ -187,7 +213,7 @@ public class HexGrid : MonoBehaviour
 
                         GameObject tileWater = Instantiate(outTilePrefab, positionWater, Quaternion.Euler(0, 0, 90));
                         tileWater.transform.parent = transform;
-
+                        activeTiles.Add(tileWater);
 
                         continue;
 
@@ -207,8 +233,8 @@ public class HexGrid : MonoBehaviour
 
         }
 
-        
 
+        BallSpawn();
 
 
 
@@ -216,7 +242,7 @@ public class HexGrid : MonoBehaviour
 
     }
 
-    private Vector2 InitHole(Vector3 startPosition, int tileNumberHorizontal)
+    private void InitHole(Vector3 startPosition, int x,int y, float height)
     {
 
 
@@ -225,21 +251,33 @@ public class HexGrid : MonoBehaviour
         //Store coord values and skip generate when the generation loop encounters the hole value.
 
         //Will have to find a range that is x tiles
+        float tileHeight = (Mathf.Lerp(0f, 0.06f, height / (1 - noiseThreshold)));
 
-        int x = Random.Range(5, tileNumberHorizontal-5);
-        int z = Random.Range(22, 27);
-
-        Vector2 holeCoords = new Vector2(x, z);
-        Vector3 hexCoords = GetHexCoords(x, z) + startPosition;
+        Vector3 hexCoords = GetHexCoords(x, y) + startPosition;
 
 
-        GameObject holeTile = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,0), Quaternion.Euler(0, 0, 90));
+        GameObject holeTile = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,-tileHeight), Quaternion.Euler(0, 0, 90));
        // ITile tileScript = holeTile.GetComponent<ITile>();
       //  tileScript.AssignCoordinate(x, z);
 
-        return holeCoords;
+      
 
     }
+
+    private (int,int) GenerateHoleCoords(int tileNumberHorizontal)
+    {
+
+        int x = Random.Range(5, tileNumberHorizontal - 5);
+        int z = Random.Range(22, 27);
+
+        Vector2 holeCoords = new Vector2(x, z);
+
+        
+        return (x, z);
+
+    }
+
+
 
     private Vector3 GetHexCoords(int x, int z)
     {
@@ -280,7 +318,7 @@ public class HexGrid : MonoBehaviour
             landtile = sandPrefab;
            height = (Mathf.Lerp(0f, 0.06f, waterValue / (1-noiseThreshold)));
 
-        } else if (landValue >= 0.25 && landValue < 0.5)
+        } else if (landValue >= 0.25 && landValue < 0.6)
         {
             landtile = fairwayPrefab;
            height = (Mathf.Lerp(0f, 0.06f, waterValue / (1 - noiseThreshold)));
@@ -302,11 +340,55 @@ public class HexGrid : MonoBehaviour
         GameObject tile = Instantiate(landtile, position, Quaternion.Euler(0, 0, 90));
         ITile tileScript = tile.GetComponent<ITile>();
         tileScript.AssignCoordinate(x, z);
+
+        activeTiles.Add(tile);
         tile.transform.parent = transform;
 
 
 
     }
+
+
+    public void BallSpawn()
+    {
+        bool ballSpawnLoop = true;
+
+        //The following loop spawns the inital state of the ball.
+        //If the tile type is not a Fairway type, then the ball does not spawn and the loop continues until it finds one.
+
+        while (ballSpawnLoop)
+        {
+
+            int x = Random.Range(3, courseWidth - 3);
+            int z = Random.Range(4, 8);
+
+            for (int i = 0; i < activeTiles.Count; i++)
+            {
+                ITile tileScript = activeTiles[i].GetComponent<ITile>();
+
+                if (tileScript.GetCoordinates() == new Vector2(x, z))
+                {
+
+                    if (tileScript.GetTileType() != "Fairway") continue;
+
+
+
+                    Vector3 position = (GetHexCoords(x, z) + startTilePosition) + new Vector3(0, 0, -.25f);
+
+                    GameObject ball = Instantiate(ballPrefab, position, Quaternion.identity);
+
+                    ballSpawnLoop = false;
+
+
+                }
+
+            }
+
+        }
+ 
+
+    }
+
 
 
 

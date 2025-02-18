@@ -35,4 +35,10 @@ public class RoughHex : MonoBehaviour, ITile
 
     }
 
+    public Vector2 GetCoordinates()
+    {
+        return coordinates;
+
+    }
+
 }

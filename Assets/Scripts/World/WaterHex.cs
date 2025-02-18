@@ -33,4 +33,11 @@ public class WaterHex : MonoBehaviour, ITile
     {
 
     }
+
+
+    public Vector2 GetCoordinates()
+    {
+        return coordinates;
+
+    }
 }

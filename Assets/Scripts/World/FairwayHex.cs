@@ -34,4 +34,11 @@ public class FairwayHex : MonoBehaviour, ITile
 
     }
 
+
+    public Vector2 GetCoordinates()
+    {
+        return coordinates;
+
+    }
+
 }
