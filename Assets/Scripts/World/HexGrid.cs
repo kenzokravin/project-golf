@@ -49,7 +49,7 @@ public class HexGrid : MonoBehaviour
             return;
         }
 
-        SpriteRenderer renderer = fairwayPrefab.GetComponentInChildren<SpriteRenderer>();
+        MeshRenderer renderer = fairwayPrefab.GetComponentInChildren<MeshRenderer>();
 
         
             Vector3 size = renderer.bounds.size;
@@ -86,20 +86,23 @@ public class HexGrid : MonoBehaviour
         // Calculate the starting X position (shift grid right to center)
         float startX = -xTotalWidth;
 
+        // Get the camera's position and rotation
+        Vector3 cameraPosition = mainCam.transform.position;  // Camera position at (0, -25, -25)
+        Quaternion cameraRotation = mainCam.transform.rotation;  // Camera rotation of (-45, 0, 0)
 
-/*
-        Debug.Log("TileNumberHorizontal: " + tileHorizontalNum);
+        // Get the camera's orthographic size (half the height of the view)
+        float orthographicSize = mainCam.orthographicSize;
 
-        Debug.Log("Starting X position: " + startX);
+        // Calculate the direction the camera is facing based on its rotation
+        Vector3 cameraForward = cameraRotation * Vector3.forward;  // Camera's forward direction considering rotation
 
+        // Calculate the vertical offset based on the camera's tilt (along the Y axis)
+        float verticalVisibility = orthographicSize * Mathf.Abs(cameraForward.y);
 
-        Debug.Log(camBounds.x);
-        Debug.Log("mapW: " + mapWidth);*/
+        // Calculate the lowest point that the camera can see at (x = 0, z = 0)
+        float lowestY = cameraPosition.y + verticalVisibility;
 
-
-        //Debug.Log(tileHeight);
-
-
+        Debug.Log("Lowest Y: " + lowestY);
 
         Vector3 startPosition = new Vector3(startX, -camBounds.y * .5f, 0);
 
@@ -115,16 +118,16 @@ public class HexGrid : MonoBehaviour
                 Vector3 hexCoords = GetHexCoords(x, z) + startPosition;
 
 
+                float waterValue = Mathf.PerlinNoise((hexCoords.x * noiseSeed) / noiseFrequency, (hexCoords.y * noiseSeed) / noiseFrequency);
 
 
-
-                if(hexCoords.x - (tileWidth *0.75f) <= -camBounds.x *.5f || hexCoords.x + (tileWidth * 0.75f) >= camBounds.x * .5f)
+                if (hexCoords.x - (tileWidth *0.75f) <= -camBounds.x *.5f || hexCoords.x + (tileWidth * 0.75f) >= camBounds.x * .5f)
                 {
                     //This is setting the width tiles to the water tiles.
 
-                    Vector3 position = new Vector3(hexCoords.x, hexCoords.y, 0);
+                    Vector3 position = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f, 0.05f, waterValue / noiseThreshold)));
 
-                    GameObject tile = Instantiate(outTilePrefab, position, Quaternion.identity);
+                    GameObject tile = Instantiate(outTilePrefab, position, Quaternion.Euler(0,0,90));
                     tile.transform.parent = transform;
 
 
@@ -135,7 +138,7 @@ public class HexGrid : MonoBehaviour
                     if(hexCoords.y > (camBounds.y * 0.5f) - (4*tileHeight))
                     {
 
-                        Debug.Log("ABOVE Line");
+                        //Debug.Log("ABOVE Line");
 
                     }
                    // Debug.Log("Conditions for Green: " +( (camBounds.y * 0.5f) - (4 * tileHeight)));
@@ -143,12 +146,12 @@ public class HexGrid : MonoBehaviour
 
                     if (noiseSeed == -1)
                     {
-                        noiseSeed = Random.Range(0, 100000);
+                        noiseSeed = Random.Range(0, 10000);
+                        //Debug.Log("Land Seed: " + noiseSeed);
                     }
 
 
 
-                    float waterValue = Mathf.PerlinNoise((hexCoords.x * noiseSeed)/noiseFrequency,(hexCoords.y * noiseSeed) / noiseFrequency);
 
                  //   Debug.Log("water Val: " + waterValue);
                  //   Debug.Log("xPerlin: " + hexCoords.x / noiseFrequency + " . Yperlin: " + hexCoords.y / noiseFrequency);
@@ -157,9 +160,9 @@ public class HexGrid : MonoBehaviour
                     if (isWater)
                     {
 
-                        Vector3 positionWater = new Vector3(hexCoords.x, hexCoords.y, 0);
+                        Vector3 positionWater = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f,0.05f,waterValue/noiseThreshold)));
 
-                        GameObject tileWater = Instantiate(outTilePrefab, positionWater, Quaternion.identity);
+                        GameObject tileWater = Instantiate(outTilePrefab, positionWater, Quaternion.Euler(0, 0, 90));
                         tileWater.transform.parent = transform;
 
 
@@ -169,7 +172,7 @@ public class HexGrid : MonoBehaviour
                     {
 
 
-                        InitLandTile(hexCoords.x, hexCoords.y);
+                        InitLandTile(hexCoords.x, hexCoords.y, waterValue);
 
 
                   
@@ -206,39 +209,46 @@ public class HexGrid : MonoBehaviour
 
     }
 
-    private void InitLandTile(float xCoord, float yCoord)
+    private void InitLandTile(float xCoord, float yCoord, float waterValue)
     {
 
         if (landNoiseSeed == -1)
         {
-            landNoiseSeed = Random.Range(0, 100000);
+            landNoiseSeed = Random.Range(0, 10000);
+            Debug.Log("Land Seed: " + landNoiseSeed);
         }
 
         GameObject landtile;
 
         float landValue = Mathf.PerlinNoise((xCoord * landNoiseSeed) / noiseFrequency, (yCoord * landNoiseSeed) / noiseFrequency);
+        float height = 0;
 
-        if(landValue < 0.2)
+        if(landValue < 0.25)
         {
 
             landtile = sandPrefab;
+           height = (Mathf.Lerp(0f, 0.06f, waterValue / (1-noiseThreshold)));
 
-        } else if (landValue >= 0.2 && landValue < 0.7)
+        } else if (landValue >= 0.25 && landValue < 0.5)
         {
             landtile = fairwayPrefab;
-
+           height = (Mathf.Lerp(0f, 0.06f, waterValue / (1 - noiseThreshold)));
 
         } else
         {
 
             landtile = roughPrefab;
+           height = (Mathf.Lerp(0f, 0.06f, waterValue / (1 - noiseThreshold)));
+          //  Debug.Log("height: " + height + " .WaterVal: " + waterValue + " . Land Val: " + landValue);
+
+            
 
         }
 
 
-        Vector3 position = new Vector3(xCoord, yCoord, 0);
+        Vector3 position = new Vector3(xCoord, yCoord, -height);
 
-        GameObject tile = Instantiate(landtile, position, Quaternion.identity);
+        GameObject tile = Instantiate(landtile, position, Quaternion.Euler(0, 0, 90));
         tile.transform.parent = transform;
 
 
