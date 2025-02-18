@@ -59,4 +59,13 @@ public class FairwayHex : MonoBehaviour, ITile
 
     }
 
+
+    public Vector3 GetPosition()
+    {
+
+        return gameObject.transform.position;
+
+    }
+
+
 }

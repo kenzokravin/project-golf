@@ -52,9 +52,27 @@ public class SandHex : MonoBehaviour, ITile
 
     }
 
+    public void OnConfirm()
+    {
+
+
+
+
+
+    }
+
+
+
     public Vector2 GetCoordinates()
     {
         return coordinates;
+
+    }
+
+    public Vector3 GetPosition()
+    {
+
+        return gameObject.transform.position;
 
     }
 

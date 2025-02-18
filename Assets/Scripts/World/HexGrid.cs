@@ -17,6 +17,7 @@ public class HexGrid : MonoBehaviour
 
     [SerializeField] GameObject currentBallTile;
     [SerializeField] GameObject ball;
+    BallController ballController;
 
 
     [SerializeField] GameObject holeTile;
@@ -377,9 +378,14 @@ public class HexGrid : MonoBehaviour
 
                     Vector3 position = (GetHexCoords(x, z) + startTilePosition) + new Vector3(0, 0, -.25f);
 
+
+                    position = tileScript.GetPosition() + new Vector3(0, 0, -.25f);
+
                     ball = Instantiate(ballPrefab, position, Quaternion.identity);
 
                     currentBallTile = activeTiles[i];
+
+                    ballController = ball.GetComponent<BallController>();
 
                    ballSpawnLoop = false;
 
@@ -399,18 +405,22 @@ public class HexGrid : MonoBehaviour
     public void SwapActiveHex(GameObject chosenHex)
     {
 
-        currentBallTile = chosenHex;
-
-        ball.transform.position = chosenHex.transform.position + new Vector3(0, 0, -.25f); 
-
+       
+       
         //Here would be where we could use the interface to check if the chosen hex is of a certain type (or we refer to the ball).
         //This could then trigger different states of the game/ball (i.e. stage is over, ball bounces, ball rolls etc)
-        
+
+        ballController.Jump(currentBallTile,chosenHex);
 
 
-
+        currentBallTile = chosenHex;
 
     }
+
+
+
+
+
 
 
 

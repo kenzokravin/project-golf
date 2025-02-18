@@ -9,5 +9,7 @@ public interface ITile
     void OnClick();
 
     Vector2 GetCoordinates();
+
+    Vector3 GetPosition();
     
 }

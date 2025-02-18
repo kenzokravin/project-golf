@@ -40,4 +40,12 @@ public class WaterHex : MonoBehaviour, ITile
         return coordinates;
 
     }
+
+    public Vector3 GetPosition()
+    {
+
+        return gameObject.transform.position;
+
+    }
+
 }

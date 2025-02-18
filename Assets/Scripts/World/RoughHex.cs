@@ -41,4 +41,12 @@ public class RoughHex : MonoBehaviour, ITile
 
     }
 
+    public Vector3 GetPosition()
+    {
+
+        return gameObject.transform.position;
+
+    }
+
+
 }

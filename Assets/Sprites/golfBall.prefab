@@ -71,5 +71,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cfe9e87cdaf886240a3c18eb55aa6f37, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -2920511501525617636}
   m_SourcePrefab: {fileID: 100100000, guid: cfe9e87cdaf886240a3c18eb55aa6f37, type: 3}
+--- !u!1 &6910912117343484790 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: cfe9e87cdaf886240a3c18eb55aa6f37, type: 3}
+  m_PrefabInstance: {fileID: 5992342929954194983}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-2920511501525617636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6910912117343484790}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4cc75a22a8572ca4aa4584dc0aeb5852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitHeight: 1
+  hitSpeed: 2
+  startPoint: {x: 0, y: 0, z: 0}
+  endPoint: {x: 0, y: 0, z: 0}
+  ballSurfaceHeight: {x: 0, y: 0, z: -0.25}
+  minHeight: 0.5
+  maxHeight: 3
+  t: 0
+  isMoving: 0

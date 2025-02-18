@@ -29,9 +29,26 @@ public class ClickDetector : MonoBehaviour
                 {
                     if(selected)
                     {
-                        ITile previousTile = clickedTile.GetComponent<ITile>();
-                        previousTile.OnClick();
-                        selected = false;
+
+                        if(hit.collider.gameObject == clickedTile)
+                        {
+
+
+                            ITile confirmTile = clickedTile.GetComponent<ITile>();
+                            confirmTile.OnClick();
+                            selected = false;
+
+                        }
+                        else
+                        {
+
+                            ITile previousTile = clickedTile.GetComponent<ITile>();
+                            previousTile.OnClick();
+                            selected = false;
+
+                        }
+
+
 
                     }
 
