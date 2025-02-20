@@ -65,9 +65,17 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 0117547d809ad2a4a9aa2d39cacd15cd, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 0117547d809ad2a4a9aa2d39cacd15cd, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: cd69ff0aefee5a34391aaf0621946567, type: 2}
+      objectReference: {fileID: 2100000, guid: 8ab46ba4b00164849b65d321745083c1, type: 2}
+    - target: {fileID: -7511558181221131132, guid: 0117547d809ad2a4a9aa2d39cacd15cd, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 281c0b16ab36fa441b27dc7e758ee628, type: 2}
     - target: {fileID: 919132149155446097, guid: 0117547d809ad2a4a9aa2d39cacd15cd, type: 3}
       propertyPath: m_Name
       value: tileTwisted 1 1
@@ -103,6 +111,9 @@ MonoBehaviour:
   tileType: Fairway
   coordinates: {x: 0, y: 0}
   selected: 0
+  gCost: 0
+  fCost: 0
+  hCost: 0
 --- !u!64 &1141547751488403062
 MeshCollider:
   m_ObjectHideFlags: 0

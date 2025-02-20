@@ -78,31 +78,31 @@ public class Pathfinding : MonoBehaviour
 
             if(tile.GetCoordinates().y + 1 < hexGrid.GetCourseHeight() && tile.GetCoordinates().x + 1 < hexGrid.GetCourseWidth())
             {
-
+                //Diagonal Top Right
                 neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y + 1))).GetComponent<ITile>());
 
             }
 
-            if (tile.GetCoordinates().y - 1 >= 0 && tile.GetCoordinates().x + 1 < hexGrid.GetCourseWidth())
+            if (tile.GetCoordinates().y + 1 < hexGrid.GetCourseHeight() && tile.GetCoordinates().x - 1 >= 0)
             {
-
-                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y - 1))).GetComponent<ITile>());
+                //Diagonal Top Left
+                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y + 1))).GetComponent<ITile>());
 
             }
         } else
         {
 
-            if (tile.GetCoordinates().y + 1 < hexGrid.GetCourseHeight() && tile.GetCoordinates().x - 1 >= 0)
+            if (tile.GetCoordinates().y - 1 >= 0 && tile.GetCoordinates().x - 1 >= 0)
             {
-
-                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y + 1))).GetComponent<ITile>());
+                //Diagonal Bot Left
+                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y - 1))).GetComponent<ITile>());
 
             }
 
-            if (tile.GetCoordinates().y - 1 >= 0 && tile.GetCoordinates().x - 1 >= 0)
+            if (tile.GetCoordinates().y - 1 >= 0 && tile.GetCoordinates().x + 1 < hexGrid.GetCourseWidth())
             {
-
-                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y - 1))).GetComponent<ITile>());
+                //Diagonal bot right
+                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y - 1))).GetComponent<ITile>());
 
             }
 
