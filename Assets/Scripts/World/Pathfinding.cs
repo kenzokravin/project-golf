@@ -142,12 +142,6 @@ public class Pathfinding : MonoBehaviour
                 hex.CalculateFCost();
                 hex.SetCameFromTile(null);
 
-
-               
-
-
-
-
             }
         }
 

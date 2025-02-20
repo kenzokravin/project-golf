@@ -19,10 +19,13 @@ public class HexGrid : MonoBehaviour
     [SerializeField] GameObject ball;
     BallController ballController;
 
+    [SerializeField] int holeNum;
+
 
     [SerializeField] GameObject holeTile;
     [SerializeField] private int courseWidth;
     [SerializeField] private Vector3 startTilePosition;
+
 
     public Camera mainCam;
 
@@ -33,19 +36,23 @@ public class HexGrid : MonoBehaviour
     [SerializeField] private float landNoiseSeed = 1234567;
 
     [SerializeField] private List<GameObject> activeTiles;
+    [SerializeField] private List<GameObject> pooledTiles;
 
 
 
     void Start()
     {
-
+        holeNum = 0;
         MakeMapGrid();
+        pooledTiles = new List<GameObject>();
     }
 
     // Update is called once per frame
     void Update()
     {
         
+        
+
     }
 
     private void Awake()
@@ -136,6 +143,8 @@ public class HexGrid : MonoBehaviour
         Debug.Log("Hole Coords: " + holeCoords);
 
 
+
+
         for (int x = 0; x < mapWidth; x++)
         {
 
@@ -149,20 +158,20 @@ public class HexGrid : MonoBehaviour
 
 
 
-                Vector3 hexCoords = GetHexCoords(x, z) + startPosition;
+                Vector3 hexCoords = GetHexCoords(x, z + (mapHeight* (holeNum != 0 ? 1 : 0))) + startPosition;
 
 
                 float waterValue = Mathf.PerlinNoise((hexCoords.x * noiseSeed) / noiseFrequency, (hexCoords.y * noiseSeed) / noiseFrequency);
 
 
-                if (holeCoords == new Vector2(x, z))
+                if (holeCoords == new Vector2(x, z + (mapHeight * (holeNum != 0 ? 1 : 0))))
                 {
 
                     InitHole(startPosition, result.Item1,result.Item2, waterValue);
 
 
 
-                    Debug.Log("Matched: " + new Vector2(x, z));
+                    Debug.Log("Matched: " + new Vector2(x, z + (mapHeight * (holeNum != 0 ? 1 : 0))));
 
                     continue;
                 }
@@ -175,9 +184,13 @@ public class HexGrid : MonoBehaviour
 
                     Vector3 position = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f, 0.05f, waterValue / noiseThreshold)));
 
+
+                 
+
+
                     GameObject tile = Instantiate(outTilePrefab, position, Quaternion.Euler(0,0,90));
                     ITile tileScript = tile.GetComponent<ITile>();
-                    tileScript.AssignCoordinate(x, z);
+                    tileScript.AssignCoordinate(x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
                     tile.transform.parent = transform;
 
                     activeTiles.Add(tile);
@@ -212,13 +225,13 @@ public class HexGrid : MonoBehaviour
                     if (isWater)
                     {
 
-                        Vector3 positionWater = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f,0.05f,waterValue/noiseThreshold)));
+                        Vector3 positionWater = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0.02f,0.07f,waterValue/noiseThreshold)));
 
                         GameObject tileWater = Instantiate(outTilePrefab, positionWater, Quaternion.Euler(0, 0, 90));
                         tileWater.transform.parent = transform;
 
                         ITile tileWaterScript = tileWater.GetComponent<ITile>();
-                        tileWaterScript.AssignCoordinate(x, z);
+                        tileWaterScript.AssignCoordinate(x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
 
                         activeTiles.Add(tileWater);
 
@@ -241,8 +254,12 @@ public class HexGrid : MonoBehaviour
         }
 
 
-        BallSpawn();
+        //If the hole is not the start hole then do not spawn the ball
+        if(holeNum == 0 ? true : false) BallSpawn();
 
+
+      
+       
 
 
 
@@ -263,10 +280,11 @@ public class HexGrid : MonoBehaviour
         Vector3 hexCoords = GetHexCoords(x, y) + startPosition;
 
 
-        GameObject holeTile = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,-tileHeight), Quaternion.Euler(0, 0, 90));
-       ITile tileScript = holeTile.GetComponent<ITile>();
+        GameObject hole = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,-tileHeight), Quaternion.Euler(0, 0, 90));
+        holeTile = hole;
+       ITile tileScript = hole.GetComponent<ITile>();
         tileScript.AssignCoordinate(x, y);
-        activeTiles.Add(holeTile);
+        activeTiles.Add(hole);
 
       
 
@@ -278,10 +296,10 @@ public class HexGrid : MonoBehaviour
         int x = Random.Range(5, tileNumberHorizontal - 5);
         int z = Random.Range(22, 27);
 
-        Vector2 holeCoords = new Vector2(x, z);
+        Vector2 holeCoords = new Vector2(x, z + (mapHeight * (holeNum > 0 ? 1 : 0)));
 
         
-        return (x, z);
+        return (x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
 
     }
 
@@ -345,9 +363,34 @@ public class HexGrid : MonoBehaviour
 
         Vector3 position = new Vector3(xCoord, yCoord, -height);
 
+        //Checking if land tile is available in object pool by checking for the tile type.
+        //This could be done better by cycling through before and passing the tile into this method. (reducing number of for loop).
+        
+        for(int i = 0; i < pooledTiles.Count; i++)
+        {
+            ITile pooledTile = pooledTiles[i].GetComponent<ITile>();
+            if (pooledTile.GetTileType() == landtile.GetComponent<ITile>().GetTileType())
+            {
+
+                pooledTiles[i].SetActive(true);
+                pooledTiles[i].transform.position = position;
+                pooledTile.AssignCoordinate(x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
+
+                activeTiles.Add(pooledTiles[i]);
+
+                pooledTiles.RemoveAt(i);
+                return;
+
+
+            }
+        }
+
+
+
+
         GameObject tile = Instantiate(landtile, position, Quaternion.Euler(0, 0, 90));
         ITile tileScript = tile.GetComponent<ITile>();
-        tileScript.AssignCoordinate(x, z);
+        tileScript.AssignCoordinate(x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
 
         activeTiles.Add(tile);
         tile.transform.parent = transform;
@@ -392,6 +435,10 @@ public class HexGrid : MonoBehaviour
 
                     ballController = ball.GetComponent<BallController>();
 
+                    ballController.SetHexGrid(activeTiles[i]);
+
+                    Debug.Log("ballTileSet");
+
                    ballSpawnLoop = false;
 
                     
@@ -420,23 +467,133 @@ public class HexGrid : MonoBehaviour
         ITile tileScript = currentBallTile.GetComponent<ITile>();
         tileScript.GetCoordinates();
 
-        for (int i = 0; i < activeTiles.Count; i++)
+        currentBallTile = chosenHex;
+        ballController.SetHexGrid(currentBallTile);
+
+        //If hex is the holeTile. Start End Hole Cycle.
+        if (chosenHex == holeTile)
         {
+            HoleCycle();
 
-            ITile loopTiles = activeTiles[i].GetComponent<ITile>();
+        }
+       
 
-            if (loopTiles.GetCoordinates().x == (tileScript.GetCoordinates().x - 1))
-            {
-                if (loopTiles.GetCoordinates().y == (tileScript.GetCoordinates().y - 1))
-            {
+       // currentBallTile = chosenHex;
+
+      //  ballController.SetHexGrid(currentBallTile);
+
+    }
+
+    private void HoleCycle()
+    {
+        holeNum++;
+
+        //Making next hole level.
+        //Maybe not use hole number to scale y? If it goes to hole two, it will use the double multiply
+        MakeMapGrid();
 
 
-                }
+        if (holeNum > 0)
+        {
+            ShiftHexPositions();
+            //Move the holes
 
-            }
+           // PoolInactiveTiles();
+
         }
 
-        currentBallTile = chosenHex;
+    }
+
+
+    private void ShiftHexPositions()
+    {
+
+
+        //Get first hex y position. Compare it to the newly regenerated hex position.
+        // Move all positions down by that value (or to that position, using y value of current hole + holeheight).
+        //Then we assign the new coordinate values to the new set of tiles (by subtracting the added holeheight from y, whilst keeping x).
+        
+
+        float courseHeightMove = mapHeight * tileSize;
+
+
+        for (int i = 0; i < activeTiles.Count;i++)
+        {
+
+            ITile activeTile = activeTiles[i].GetComponent<ITile>();
+
+
+            activeTile.AssignCoordinate((int)activeTile.GetCoordinates().x, (int)activeTile.GetCoordinates().y - mapHeight);
+
+
+            activeTiles[i].transform.position = activeTiles[i].transform.position + new Vector3(0, -courseHeightMove, 0);
+
+
+
+
+
+            if (activeTiles[i].GetComponent<ITile>().GetCoordinates().y <= 0)
+            {
+
+
+                Debug.Log("Object Pooled with Coords: (" + activeTile.GetCoordinates().x + "," + activeTile.GetCoordinates().y + ").");
+
+                pooledTiles.Add(activeTiles[i]);
+                activeTiles[i].SetActive(false);
+
+                activeTiles.RemoveAt(i);
+            }
+            else
+            {
+                Debug.Log("Object NOT Pooled with Coords: (" + activeTile.GetCoordinates().x + "," + activeTile.GetCoordinates().y + ").");
+
+            }
+
+
+        }
+
+
+
+    }
+
+    private void PoolInactiveTiles()
+    {
+
+        //This could perhaps work better, to prevent constant for loop cycling (maybe better for performance?)
+        //We could set it so each tile does it individual and then calls the pool?
+
+        //Height limit could use the start position to set 
+        //float heightLimit = -8f;
+
+        //Right now, the issue with pooling, is that we are spawning and then pooling.
+        //We are also using Coordinate system values which is good, but the order of operations could be fucked.
+
+       
+
+        for (int i = 0;i < activeTiles.Count;i++)
+        {
+
+            if(activeTiles[i].GetComponent<ITile>().GetCoordinates().y < 0)
+            {
+                //When the tile hits the height limit, then it will be pooled. (which is below the y coord of 0.)
+                //Removing it from the active tiles and hiding it.
+
+                Debug.Log("Object Pooled");
+
+
+
+
+
+               pooledTiles.Add(activeTiles[i]);
+               activeTiles[i].SetActive(false);
+
+                activeTiles.RemoveAt(i);
+            }
+
+        }
+
+
+
 
     }
 

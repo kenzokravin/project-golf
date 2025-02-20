@@ -15,10 +15,11 @@ public class BallController : MonoBehaviour
 
     [SerializeField] float t = 0f;
     [SerializeField] bool isMoving = false;
+    [SerializeField] GameObject ballTile;
 
     void Start()
     {
-        
+       
     }
 
     // Update is called once per frame
@@ -81,20 +82,25 @@ public class BallController : MonoBehaviour
             {
              //   Debug.Log("They are close enough!");
                 gameObject.transform.position = endPoint;
-
-                
-
-
                 isMoving = false;
             }
 
 
+        } else
+        {
+            //Keeps ball object tracking it's current tile.
+            gameObject.transform.position = ballTile.transform.position + ballSurfaceHeight;
+
         }
 
 
-
-
     }
+
+    public void SetHexGrid(GameObject hGrid)
+    {
+        ballTile = hGrid;
+    }
+
 
 
 }
