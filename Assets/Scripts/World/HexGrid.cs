@@ -264,8 +264,9 @@ public class HexGrid : MonoBehaviour
 
 
         GameObject holeTile = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,-tileHeight), Quaternion.Euler(0, 0, 90));
-       // ITile tileScript = holeTile.GetComponent<ITile>();
-      //  tileScript.AssignCoordinate(x, z);
+       ITile tileScript = holeTile.GetComponent<ITile>();
+        tileScript.AssignCoordinate(x, y);
+        activeTiles.Add(holeTile);
 
       
 
@@ -430,20 +431,51 @@ public class HexGrid : MonoBehaviour
             {
 
 
-
-
-
-
                 }
 
             }
         }
 
-
-
-
-
         currentBallTile = chosenHex;
+
+    }
+
+
+
+    public GameObject GetHex(int x, int y)
+    {
+
+        GameObject retHex = null;
+
+        for(int i = 0;i < activeTiles.Count; i++)
+        {
+
+            ITile tile = activeTiles[i].GetComponent<ITile>();
+
+            if(tile.GetCoordinates().x == x && tile.GetCoordinates().y == y)
+            {
+
+                retHex = activeTiles[i];
+
+            } 
+        }
+
+        return retHex;
+
+
+    }
+
+    public int GetCourseWidth()
+    {
+
+        return courseWidth;
+
+    }
+
+    public int GetCourseHeight()
+    {
+
+        return mapHeight;
 
     }
 
@@ -462,9 +494,9 @@ public class HexGrid : MonoBehaviour
 
     }
 
-
-
-
-
+    public List<GameObject> GetActiveTiles()
+    {
+        return activeTiles;
+    }
 
 }

@@ -6,6 +6,13 @@ public class RoughHex : MonoBehaviour, ITile
     [SerializeField] private string tileType;
     [SerializeField] private Vector2 coordinates;
 
+    [SerializeField] private bool selected = false;
+
+    [SerializeField] private int gCost;
+    [SerializeField] private int fCost;
+    [SerializeField] private int hCost;
+
+    [SerializeField] public ITile cameFromTile;
 
     void Start()
     {
@@ -53,6 +60,76 @@ public class RoughHex : MonoBehaviour, ITile
 
         
 
+
+
+    }
+
+
+    public void SetGCost(int cost)
+    {
+        gCost = cost;
+
+
+    }
+
+    public void SetFCost(int cost)
+    {
+
+        fCost = cost;
+
+    }
+
+
+    public void SetHCost(int cost)
+    {
+
+        hCost = cost;
+
+    }
+
+    public int GetGCost()
+    {
+        return gCost;
+
+
+    }
+
+    public int GetFCost()
+    {
+        return fCost;
+
+
+    }
+
+    public int GetHCost()
+    {
+        return hCost;
+
+
+    }
+
+
+
+    public void CalculateFCost()
+    {
+
+        fCost = gCost + hCost;
+
+
+    }
+
+    public void SetCameFromTile(ITile hex)
+    {
+
+        cameFromTile = hex;
+
+
+    }
+
+    public ITile GetCameFromTile()
+    {
+
+        return cameFromTile;
 
 
     }

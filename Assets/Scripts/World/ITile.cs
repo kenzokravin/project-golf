@@ -13,5 +13,20 @@ public interface ITile
     Vector2 GetCoordinates();
 
     Vector3 GetPosition();
-    
+
+    void SetGCost(int gCost);
+
+    int GetGCost();
+
+    void SetFCost(int fCost);
+    int GetFCost();
+
+    void SetHCost(int fCost);
+
+    void CalculateFCost();
+
+    void SetCameFromTile(ITile hex);
+
+    ITile GetCameFromTile();
+
 }

@@ -130,6 +130,7 @@ GameObject:
   - component: {fileID: 154187398}
   - component: {fileID: 154187397}
   - component: {fileID: 154187399}
+  - component: {fileID: 154187400}
   m_Layer: 0
   m_Name: MapBuilder
   m_TagString: Untagged
@@ -159,6 +160,8 @@ MonoBehaviour:
   greenPrefab: {fileID: 5016279552222278553, guid: 7fad20a1e7ebc3f4e8cd458c790f06ed, type: 3}
   holePrefab: {fileID: 4688345697187870530, guid: 2cb5b72fb46c38a47baf6478ce567e5a, type: 3}
   ballPrefab: {fileID: 6910912117343484790, guid: 75f35a84fcf520f458eca4eea8ebc6d6, type: 3}
+  currentBallTile: {fileID: 0}
+  ball: {fileID: 0}
   holeTile: {fileID: 0}
   courseWidth: 0
   startTilePosition: {x: 0, y: 0, z: 0}
@@ -197,6 +200,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   clickedTile: {fileID: 0}
   selected: 0
+  ball: {fileID: 0}
+--- !u!114 &154187400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 154187396}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 224441955891e7b4d87ebd5ed56ff881, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentBallTile: {fileID: 0}
+  ball: {fileID: 0}
 --- !u!1 &187298265
 GameObject:
   m_ObjectHideFlags: 0

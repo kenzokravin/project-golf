@@ -47,7 +47,7 @@ public class BallController : MonoBehaviour
 
 
 
-        Debug.Log("start: " + startPoint + ". end: " + endPoint);
+       // Debug.Log("start: " + startPoint + ". end: " + endPoint);
 
     }
 
@@ -75,11 +75,11 @@ public class BallController : MonoBehaviour
             Vector3 pos = GetFlightPoint(startPoint, endPoint);
             transform.position = pos;
 
-            Debug.Log("Position: " + gameObject.transform.position);
+          //  Debug.Log("Position: " + gameObject.transform.position);
 
             if (Vector3.Distance(gameObject.transform.position, endPoint) < 0.01f)
             {
-                Debug.Log("They are close enough!");
+             //   Debug.Log("They are close enough!");
                 gameObject.transform.position = endPoint;
 
                 
