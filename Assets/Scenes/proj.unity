@@ -162,6 +162,9 @@ MonoBehaviour:
   ballPrefab: {fileID: 6910912117343484790, guid: 75f35a84fcf520f458eca4eea8ebc6d6, type: 3}
   currentBallTile: {fileID: 0}
   ball: {fileID: 0}
+  holeNum: 0
+  isInitializing: 0
+  poolCounter: 0
   holeTile: {fileID: 0}
   courseWidth: 0
   startTilePosition: {x: 0, y: 0, z: 0}
@@ -171,6 +174,7 @@ MonoBehaviour:
   noiseSeed: -1
   landNoiseSeed: -1
   activeTiles: []
+  pooledTiles: []
 --- !u!4 &154187398
 Transform:
   m_ObjectHideFlags: 0

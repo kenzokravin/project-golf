@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class HexGrid : MonoBehaviour
 {
@@ -158,22 +159,26 @@ public class HexGrid : MonoBehaviour
 
                 //Checking the hole coords to ensure that it isn't overwritten.
 
-                Vector3 hexCoords = GetHexCoords(x, z + (mapHeight* (holeNum != 0 ? 1 : 0))) + startPosition;
+                Vector3 hexCoords = GetHexCoords(x, (z + (holeNum != 0 ? mapHeight : 0))) + startPosition;
 
 
                 float waterValue = Mathf.PerlinNoise((hexCoords.x * noiseSeed) / noiseFrequency, (hexCoords.y * noiseSeed) / noiseFrequency);
 
 
-                if (holeCoords == new Vector2(x, z + (mapHeight * (holeNum != 0 ? 1 : 0))))
+                if (Mathf.Approximately(holeCoords.x, x) && Mathf.Approximately(holeCoords.y, (z + (holeNum != 0 ? mapHeight : 0))))
                 {
+
+                    Debug.Log("Hole Generated: " + x + ", " + z);
+
+                    Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
 
                     //-------------------------------
                     //Need to add hole type script to hole.
                     if (CheckHexPoolWater(x, z, hexCoords, "Hole",waterValue))
                     {
 
-                        continue;
-                    }
+                       continue;
+                   }
 
 
 
@@ -181,7 +186,7 @@ public class HexGrid : MonoBehaviour
 
 
 
-                    Debug.Log("Matched: " + new Vector2(x, z + (mapHeight * (holeNum != 0 ? 1 : 0))));
+                    Debug.Log("Matched: " + new Vector2(x, (z + (holeNum != 0 ? mapHeight : 0))));
 
                     continue;
                 }
@@ -194,17 +199,18 @@ public class HexGrid : MonoBehaviour
 
                     Vector3 position = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f, 0.05f, waterValue / noiseThreshold)));
 
+                    Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
 
                     if (CheckHexPoolWater(x, z, position,"Water",0))
                     {
 
-                        continue;
+                       continue;
                     }
 
 
                     GameObject tile = Instantiate(outTilePrefab, position, Quaternion.Euler(0,0,90));
                     ITile tileScript = tile.GetComponent<ITile>();
-                    tileScript.AssignCoordinate(x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
+                    tileScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
                     tile.transform.parent = transform;
 
                     activeTiles.Add(tile);
@@ -237,7 +243,9 @@ public class HexGrid : MonoBehaviour
 
                         //May be issue with array size causing memory issues.
 
-                       if(CheckHexPoolWater(x,z,positionWater,"Water",0))
+                        Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
+
+                        if (CheckHexPoolWater(x,z,positionWater,"Water",0))
                         {
 
                             continue;
@@ -249,7 +257,7 @@ public class HexGrid : MonoBehaviour
                             tileWater.transform.parent = transform;
 
                             ITile tileWaterScript = tileWater.GetComponent<ITile>();
-                            tileWaterScript.AssignCoordinate(x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
+                            tileWaterScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
 
                             activeTiles.Add(tileWater);
 
@@ -260,7 +268,7 @@ public class HexGrid : MonoBehaviour
                     } else
                     {
 
-
+                        Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
                         InitLandTile(hexCoords.x, hexCoords.y, waterValue, x, z);
 
 
@@ -386,25 +394,14 @@ public class HexGrid : MonoBehaviour
 
         //Checking if land tile is available in object pool by checking for the tile type.
         //This could be done better by cycling through before and passing the tile into this method. (reducing number of for loop).
-        
-        for(int i = 0; i < pooledTiles.Count; i++)
+    
+
+        if(CheckHexPoolWater(x, z, position, landTile, 0))
         {
-            ITile pooledTile = pooledTiles[i].GetComponent<ITile>();
-            if (pooledTile.GetTileType() == landTile)
-            {
 
-                pooledTiles[i].SetActive(true);
-                pooledTiles[i].transform.position = position;
-                pooledTile.AssignCoordinate(x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
+            return;
+        };
 
-                activeTiles.Add(pooledTiles[i]);
-
-                pooledTiles.RemoveAt(i);
-                return;
-
-
-            }
-        }
 
 
         //The below only creates an object if the object pool is void of any matching types.
@@ -425,10 +422,11 @@ public class HexGrid : MonoBehaviour
 
         }
 
+        Debug.Log("Instantiated type: " + landTile + ", at: " + x + ", " + (z + (holeNum != 0 ? mapHeight : 0)));
 
         GameObject tile = Instantiate(landHex, position, Quaternion.Euler(0, 0, 90));
         ITile tileScript = tile.GetComponent<ITile>();
-        tileScript.AssignCoordinate(x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
+        tileScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
 
         activeTiles.Add(tile);
         tile.transform.parent = transform;
@@ -555,7 +553,7 @@ public class HexGrid : MonoBehaviour
         float courseHeightMove = mapHeight * tileSize;
 
 
-        for (int i = 0; i < activeTiles.Count;i++)
+        for (int i = activeTiles.Count - 1; i >=0;i--)
         {
 
             ITile activeTile = activeTiles[i].GetComponent<ITile>();
@@ -576,16 +574,19 @@ public class HexGrid : MonoBehaviour
 
                 Debug.Log("Object Pooled with Coords: (" + activeTile.GetCoordinates().x + "," + activeTile.GetCoordinates().y + ").");
 
-                pooledTiles.Add(activeTiles[i]);
-                activeTiles[i].SetActive(false);
+                GameObject tileToPool = activeTiles[i];
+                activeTiles.RemoveAt(i);
+
+                pooledTiles.Add(tileToPool);
+                tileToPool.SetActive(false);
 
                 //Can't remove from active tiles as it affects the index of the list.
-                activeTiles.RemoveAt(i);
-                i--;
+               
+               
             }
             else
             {
-                Debug.Log("Object NOT Pooled with Coords: (" + activeTile.GetCoordinates().x + "," + activeTile.GetCoordinates().y + ").");
+             //   Debug.Log("Object NOT Pooled with Coords: (" + activeTile.GetCoordinates().x + "," + activeTile.GetCoordinates().y + ").");
 
             }
 
@@ -595,48 +596,6 @@ public class HexGrid : MonoBehaviour
 
 
     }
-
-    private void PoolInactiveTiles()
-    {
-
-        //This could perhaps work better, to prevent constant for loop cycling (maybe better for performance?)
-        //We could set it so each tile does it individual and then calls the pool?
-
-        //Height limit could use the start position to set 
-        //float heightLimit = -8f;
-
-        //Right now, the issue with pooling, is that we are spawning and then pooling.
-        //We are also using Coordinate system values which is good, but the order of operations could be fucked.
-
-       
-
-        for (int i = 0;i < activeTiles.Count;i++)
-        {
-
-            if(activeTiles[i].GetComponent<ITile>().GetCoordinates().y < 0)
-            {
-                //When the tile hits the height limit, then it will be pooled. (which is below the y coord of 0.)
-                //Removing it from the active tiles and hiding it.
-
-                Debug.Log("Object Pooled");
-
-
-
-
-
-               pooledTiles.Add(activeTiles[i]);
-               activeTiles[i].SetActive(false);
-
-                activeTiles.RemoveAt(i);
-            }
-
-        }
-
-
-
-
-    }
-
 
 
     public GameObject GetHex(int x, int y)
@@ -666,7 +625,7 @@ public class HexGrid : MonoBehaviour
     {
         bool ret = false;
 
-        for (int i = 0; i < pooledTiles.Count; i++)
+        for (int i = pooledTiles.Count - 1; i >= 0; i--)
         {
             ITile pooledTile = pooledTiles[i].GetComponent<ITile>();
             if (pooledTile.GetTileType() == tileType)
@@ -674,20 +633,43 @@ public class HexGrid : MonoBehaviour
 
                 pooledTiles[i].SetActive(true);
 
+                Debug.Log("Object UnPooled at: " + x + ", " + z + ". Type: " + tileType);
+
                 if(height != 0)
                 {
-                    positionWater.z = -(Mathf.Lerp(0f, 0.05f, height / noiseThreshold));
+                    if(tileType == "Water")
+                    {
+
+                        positionWater.z = (Mathf.Lerp(0f, 0.05f, height / noiseThreshold));
+
+                    }
+                }
+
+                if(tileType == "Hole")
+                {
+                    pooledTile.OnClick();
+                    holeTile = pooledTiles[i];
                 }
 
              
                 pooledTiles[i].transform.position = positionWater;
-                pooledTile.AssignCoordinate(x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
+                pooledTile.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
 
-                activeTiles.Add(pooledTiles[i]);
+                GameObject pooledObj = pooledTiles[i].gameObject;
 
                 pooledTiles.RemoveAt(i);
 
+          
+
+
+                activeTiles.Add(pooledObj);
+
+            
+
                 ret = true;
+                return ret;
+              
+                
 
             }
         }

@@ -26,7 +26,7 @@ public class ClickDetector : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit))
             {
-                Debug.Log("Clicked on: " + hit.collider.gameObject.name);
+               // Debug.Log("Clicked on: " + hit.collider.gameObject.name);
 
                 // If the object has a specific script
                 ITile clickable = hit.collider.gameObject.GetComponent<ITile>();
