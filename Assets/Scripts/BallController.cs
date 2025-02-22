@@ -32,6 +32,20 @@ public class BallController : MonoBehaviour
     }
 
 
+    public void AccuracyCheck()
+    {
+
+
+
+
+
+
+    }
+
+
+
+
+
     public void Jump(GameObject tileFrom, GameObject tileTo)
     {
 

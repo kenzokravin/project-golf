@@ -147,6 +147,7 @@ public class HexGrid : MonoBehaviour
         Vector2 holeCoords = new Vector2(result.Item1,result.Item2);
         Debug.Log("Hole Coords: " + holeCoords);
 
+        float noiseOffset = holeNum * mapHeight;
 
 
 
@@ -162,16 +163,18 @@ public class HexGrid : MonoBehaviour
                 Vector3 hexCoords = GetHexCoords(x, (z + (holeNum != 0 ? mapHeight : 0))) + startPosition;
 
 
-               // if (noiseSeed == -1 || holeNum > 0)
-              //  {
+                if (noiseSeed == -1)
+               {
                     noiseSeed = Random.Range(0, 10000);
 
-              //  }
+               }
+
+               
 
                 //Right now there is no way to have a seeded map, to do this, we would have to translate/offset the perlin noise each time it is regen. Thus maintaining the same seed.
 
 
-                float waterValue = Mathf.PerlinNoise((hexCoords.x * noiseSeed) / noiseFrequency, (hexCoords.y * noiseSeed) / noiseFrequency);
+                float waterValue = Mathf.PerlinNoise(((hexCoords.x) * noiseSeed) / noiseFrequency, ((hexCoords.y + noiseOffset) * noiseSeed) / noiseFrequency);
 
 
 
@@ -361,17 +364,18 @@ public class HexGrid : MonoBehaviour
     private void InitLandTile(float xCoord, float yCoord, float waterValue, int x, int z)
     {
 
-       // if (landNoiseSeed == -1)
-       // {
+       if (landNoiseSeed == -1)
+        {
             landNoiseSeed = Random.Range(0, 10000);
          //   Debug.Log("Land Seed: " + landNoiseSeed);
-       // }
+        }
 
 
         string landTile = null;
 
+        float noiseOffset = holeNum * mapHeight;
 
-        float landValue = Mathf.PerlinNoise((xCoord * landNoiseSeed) / noiseFrequency, (yCoord * landNoiseSeed) / noiseFrequency);
+        float landValue = Mathf.PerlinNoise((xCoord * landNoiseSeed) / noiseFrequency, ((yCoord + noiseOffset) * landNoiseSeed) / noiseFrequency);
         float height = 0;
 
         if(landValue < 0.25)
@@ -645,6 +649,9 @@ public class HexGrid : MonoBehaviour
                 {
                     pooledTile.OnClick();
                     holeTile = pooledTiles[i];
+
+
+
                 }
 
              
