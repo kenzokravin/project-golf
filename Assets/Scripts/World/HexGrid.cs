@@ -162,7 +162,19 @@ public class HexGrid : MonoBehaviour
                 Vector3 hexCoords = GetHexCoords(x, (z + (holeNum != 0 ? mapHeight : 0))) + startPosition;
 
 
+               // if (noiseSeed == -1 || holeNum > 0)
+              //  {
+                    noiseSeed = Random.Range(0, 10000);
+
+              //  }
+
+                //Right now there is no way to have a seeded map, to do this, we would have to translate/offset the perlin noise each time it is regen. Thus maintaining the same seed.
+
+
                 float waterValue = Mathf.PerlinNoise((hexCoords.x * noiseSeed) / noiseFrequency, (hexCoords.y * noiseSeed) / noiseFrequency);
+
+
+
 
 
                 if (Mathf.Approximately(holeCoords.x, x) && Mathf.Approximately(holeCoords.y, (z + (holeNum != 0 ? mapHeight : 0))))
@@ -170,7 +182,7 @@ public class HexGrid : MonoBehaviour
 
                     Debug.Log("Hole Generated: " + x + ", " + z);
 
-                    Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
+                  //  Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
 
                     //-------------------------------
                     //Need to add hole type script to hole.
@@ -180,13 +192,10 @@ public class HexGrid : MonoBehaviour
                        continue;
                    }
 
-
-
                     InitHole(startPosition, result.Item1,result.Item2, waterValue);
 
 
-
-                    Debug.Log("Matched: " + new Vector2(x, (z + (holeNum != 0 ? mapHeight : 0))));
+                 //   Debug.Log("Matched: " + new Vector2(x, (z + (holeNum != 0 ? mapHeight : 0))));
 
                     continue;
                 }
@@ -199,7 +208,7 @@ public class HexGrid : MonoBehaviour
 
                     Vector3 position = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f, 0.05f, waterValue / noiseThreshold)));
 
-                    Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
+                  //  Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
 
                     if (CheckHexPoolWater(x, z, position,"Water",0))
                     {
@@ -229,13 +238,10 @@ public class HexGrid : MonoBehaviour
               
 
 
-                    if (noiseSeed == -1)
-                    {
-                        noiseSeed = Random.Range(0, 10000);
-                    
-                    }
+                
 
                     bool isWater = waterValue < noiseThreshold;
+
                     if (isWater)
                     {
 
@@ -327,7 +333,7 @@ public class HexGrid : MonoBehaviour
        // Vector2 holeCoords = new Vector2(x, z + (mapHeight * (holeNum > 0 ? 1 : 0)));
 
         
-        return (x, z + (mapHeight * (holeNum != 0 ? 1 : 0)));
+        return (x, z + (holeNum != 0 ? mapHeight : 0));
 
     }
 
@@ -355,11 +361,11 @@ public class HexGrid : MonoBehaviour
     private void InitLandTile(float xCoord, float yCoord, float waterValue, int x, int z)
     {
 
-        if (landNoiseSeed == -1)
-        {
+       // if (landNoiseSeed == -1)
+       // {
             landNoiseSeed = Random.Range(0, 10000);
-            Debug.Log("Land Seed: " + landNoiseSeed);
-        }
+         //   Debug.Log("Land Seed: " + landNoiseSeed);
+       // }
 
 
         string landTile = null;
@@ -398,7 +404,7 @@ public class HexGrid : MonoBehaviour
 
         if(CheckHexPoolWater(x, z, position, landTile, 0))
         {
-
+            Debug.Log("Pooled Land ObJ spawned, with a noise value: " + landValue);
             return;
         };
 
@@ -422,7 +428,7 @@ public class HexGrid : MonoBehaviour
 
         }
 
-        Debug.Log("Instantiated type: " + landTile + ", at: " + x + ", " + (z + (holeNum != 0 ? mapHeight : 0)));
+        Debug.Log("Instantiated type: " + landTile + ", at: " + x + ", " + (z + (holeNum != 0 ? mapHeight : 0)) + " with a Noise Value of: " + landValue);
 
         GameObject tile = Instantiate(landHex, position, Quaternion.Euler(0, 0, 90));
         ITile tileScript = tile.GetComponent<ITile>();
@@ -534,8 +540,6 @@ public class HexGrid : MonoBehaviour
             ShiftHexPositions();
             //Move the holes
 
-           // PoolInactiveTiles();
-
         }
 
     }
@@ -566,30 +570,22 @@ public class HexGrid : MonoBehaviour
 
 
 
-            poolCounter++;
+         //   poolCounter++;
 
             if (activeTiles[i].GetComponent<ITile>().GetCoordinates().y < 0)
             {
 
 
-                Debug.Log("Object Pooled with Coords: (" + activeTile.GetCoordinates().x + "," + activeTile.GetCoordinates().y + ").");
+              //  Debug.Log("Object Pooled with Coords: (" + activeTile.GetCoordinates().x + "," + activeTile.GetCoordinates().y + ").");
 
                 GameObject tileToPool = activeTiles[i];
                 activeTiles.RemoveAt(i);
 
                 pooledTiles.Add(tileToPool);
                 tileToPool.SetActive(false);
-
-                //Can't remove from active tiles as it affects the index of the list.
                
                
             }
-            else
-            {
-             //   Debug.Log("Object NOT Pooled with Coords: (" + activeTile.GetCoordinates().x + "," + activeTile.GetCoordinates().y + ").");
-
-            }
-
 
         }
 
@@ -621,7 +617,7 @@ public class HexGrid : MonoBehaviour
 
     }
 
-    private bool CheckHexPoolWater(int x, int z ,Vector3 positionWater, string tileType, float height)
+    private bool CheckHexPoolWater(int x, int z ,Vector3 position, string tileType, float height)
     {
         bool ret = false;
 
@@ -633,14 +629,14 @@ public class HexGrid : MonoBehaviour
 
                 pooledTiles[i].SetActive(true);
 
-                Debug.Log("Object UnPooled at: " + x + ", " + z + ". Type: " + tileType);
+                //Debug.Log("Object UnPooled at: " + x + ", " + z + ". Type: " + tileType);
 
                 if(height != 0)
                 {
                     if(tileType == "Water")
                     {
 
-                        positionWater.z = (Mathf.Lerp(0f, 0.05f, height / noiseThreshold));
+                        position.z = (Mathf.Lerp(0f, 0.05f, height / noiseThreshold));
 
                     }
                 }
@@ -652,19 +648,14 @@ public class HexGrid : MonoBehaviour
                 }
 
              
-                pooledTiles[i].transform.position = positionWater;
+                pooledTiles[i].transform.position = position;
                 pooledTile.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
 
                 GameObject pooledObj = pooledTiles[i].gameObject;
 
                 pooledTiles.RemoveAt(i);
 
-          
-
-
                 activeTiles.Add(pooledObj);
-
-            
 
                 ret = true;
                 return ret;
@@ -677,6 +668,108 @@ public class HexGrid : MonoBehaviour
         return ret;
     }
 
+    public List<Vector2> GetNeighbourListCoordinates(GameObject holeHex)
+    {
+
+        //This function is used for pathfinding, used for determining the number of tiles covered for each hit.
+        //This function returns a list of neighbours that surround a specific tile.
+
+
+
+        List<Vector2> neighbourList = new List<Vector2>();
+
+       ITile tile = holeHex.GetComponent<ITile>();
+
+
+
+
+        bool oddRow = tile.GetCoordinates().x % 2 == 1;
+
+
+        //Finding directly adjacent neighbours.
+        if (tile.GetCoordinates().y - 1 >= 0)
+        {
+            //Underneath
+            Vector2 bottom = new Vector2((int)(tile.GetCoordinates().x), (int)(tile.GetCoordinates().y - 1));
+            neighbourList.Add(bottom);
+          
+
+        }
+
+        if (tile.GetCoordinates().y + 1 <= GetCourseHeight())
+        {
+            //Above
+            Vector2 above = new Vector2((int)(tile.GetCoordinates().x), (int)(tile.GetCoordinates().y + 1));
+            neighbourList.Add(above);
+
+        }
+
+        if (tile.GetCoordinates().x - 1 >= 0)
+        {
+            //Left
+            Vector2 left = new Vector2((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y));
+            neighbourList.Add(left);
+
+        }
+
+        if (tile.GetCoordinates().x + 1 < GetCourseWidth())
+        {
+            //Right
+            Vector2 right = new Vector2((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y));
+            neighbourList.Add(right);
+
+        }
+
+        if (oddRow)
+        {
+
+            if (tile.GetCoordinates().y + 1 < GetCourseHeight() && tile.GetCoordinates().x + 1 < GetCourseWidth())
+            {
+                //Diagonal Top Right
+                Vector2 topRight = new Vector2((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y + 1));
+                neighbourList.Add(topRight);
+
+            }
+
+            if (tile.GetCoordinates().y + 1 < GetCourseHeight() && tile.GetCoordinates().x - 1 >= 0)
+            {
+                //Diagonal Top Left
+                Vector2 topLeft = new Vector2((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y + 1));
+                neighbourList.Add(topLeft);
+
+            }
+        }
+        else
+        {
+
+            if (tile.GetCoordinates().y - 1 >= 0 && tile.GetCoordinates().x - 1 >= 0)
+            {
+                //Diagonal Bot Left
+                Vector2 botLeft = new Vector2((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y - 1));
+                neighbourList.Add(botLeft);
+
+              
+
+            }
+
+            if (tile.GetCoordinates().y - 1 >= 0 && tile.GetCoordinates().x + 1 < GetCourseWidth())
+            {
+                //Diagonal bot right
+
+                Vector2 botRight = new Vector2((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y - 1));
+                neighbourList.Add(botRight);
+
+       
+
+            }
+
+
+
+        }
+
+
+        return neighbourList;
+    }
 
 
 
