@@ -8,6 +8,8 @@ public class HexGrid : MonoBehaviour
     [SerializeField] public int mapWidth = 10;
     [SerializeField] public int mapHeight = 10;
     public float tileSize = 1;
+
+    public GameObject defaultHexPrefab;
     public GameObject fairwayPrefab;
     public GameObject outTilePrefab;
     public GameObject sandPrefab;
@@ -19,6 +21,7 @@ public class HexGrid : MonoBehaviour
     [SerializeField] GameObject currentBallTile;
     [SerializeField] GameObject ball;
     BallController ballController;
+    public ClickDetector clickDetector;
 
     [SerializeField] int holeNum;
     [SerializeField] private bool isInitializing;
@@ -27,6 +30,7 @@ public class HexGrid : MonoBehaviour
     [SerializeField] GameObject holeTile;
     [SerializeField] private int courseWidth;
     [SerializeField] private Vector3 startTilePosition;
+    [SerializeField] private float landHeightValue = 0.05f;
 
 
     public Camera mainCam;
@@ -44,8 +48,18 @@ public class HexGrid : MonoBehaviour
 
     void Start()
     {
+
+
+        var AllMBs = GetComponents<MonoBehaviour>();
+        foreach (var mb in AllMBs)
+        {
+            Debug.Log("HEXGRID Found a " + mb.GetType());
+        }
+
+
         holeNum = 0;
         MakeMapGrid();
+        clickDetector = GetComponent<ClickDetector>();
         pooledTiles = new List<GameObject>();
         isInitializing = false;
         poolCounter = 0;
@@ -59,12 +73,6 @@ public class HexGrid : MonoBehaviour
 
     }
 
-    private void Awake()
-    {
-
-      
-    }
-
 
     void MakeMapGrid()
     {
@@ -75,10 +83,11 @@ public class HexGrid : MonoBehaviour
             return;
         }
 
-        MeshRenderer renderer = fairwayPrefab.GetComponentInChildren<MeshRenderer>();
+        MeshRenderer renderer = defaultHexPrefab.GetComponentInChildren<MeshRenderer>();
 
-        
-            Vector3 size = renderer.bounds.size;
+
+
+        Vector3 size = renderer.bounds.size;
             float tileWidth = size.x;
             float tileHeight = size.y;
             tileSize = tileHeight;
@@ -252,7 +261,7 @@ public class HexGrid : MonoBehaviour
 
                         //May be issue with array size causing memory issues.
 
-                        Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
+                        //Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
 
                         if (CheckHexPoolWater(x,z,positionWater,"Water",0))
                         {
@@ -277,11 +286,8 @@ public class HexGrid : MonoBehaviour
                     } else
                     {
 
-                        Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
+                    //    Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
                         InitLandTile(hexCoords.x, hexCoords.y, waterValue, x, z);
-
-
-                  
 
                     }
                    
@@ -317,7 +323,7 @@ public class HexGrid : MonoBehaviour
         Vector3 hexCoords = GetHexCoords(x, y) + startPosition;
 
 
-        GameObject hole = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,-tileHeight), Quaternion.Euler(0, 0, 90));
+        GameObject hole = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,-tileHeight), Quaternion.Euler(-90, 0, 0));
         holeTile = hole;
        ITile tileScript = hole.GetComponent<ITile>();
         tileScript.AssignCoordinate(x, y);
@@ -382,18 +388,18 @@ public class HexGrid : MonoBehaviour
         {
 
             landTile = "Sand";
-           height = (Mathf.Lerp(0f, 0.06f, waterValue / (1-noiseThreshold)));
+           height = (Mathf.Lerp(0f,landHeightValue, waterValue / (1-noiseThreshold)));
 
         } else if (landValue >= 0.25 && landValue < 0.6)
         {
             landTile = "Fairway";
-            height = (Mathf.Lerp(0f, 0.06f, waterValue / (1 - noiseThreshold)));
+            height = (Mathf.Lerp(0f, landHeightValue, waterValue / (1 - noiseThreshold)));
 
         } else
         {
 
             landTile = "Rough";
-            height = (Mathf.Lerp(0f, 0.06f, waterValue / (1 - noiseThreshold)));
+            height = (Mathf.Lerp(0f, landHeightValue, waterValue / (1 - noiseThreshold)));
           //  Debug.Log("height: " + height + " .WaterVal: " + waterValue + " . Land Val: " + landValue);
 
             
@@ -432,10 +438,10 @@ public class HexGrid : MonoBehaviour
 
         }
 
-        Debug.Log("Instantiated type: " + landTile + ", at: " + x + ", " + (z + (holeNum != 0 ? mapHeight : 0)) + " with a Noise Value of: " + landValue);
+       // Debug.Log("Instantiated type: " + landTile + ", at: " + x + ", " + (z + (holeNum != 0 ? mapHeight : 0)) + " with a Noise Value of: " + landValue);
 
-        GameObject tile = Instantiate(landHex, position, Quaternion.Euler(0, 0, 90));
-        ITile tileScript = tile.GetComponent<ITile>();
+        GameObject tile = Instantiate(landHex, position, Quaternion.Euler(-90, 0, 0));
+        ITile tileScript = tile.GetComponentInChildren<ITile>();
         tileScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
 
         activeTiles.Add(tile);
@@ -483,6 +489,12 @@ public class HexGrid : MonoBehaviour
 
                     ballController.SetHexGrid(activeTiles[i]);
 
+                    Debug.Log("ball is: " + ball);
+
+                    Debug.Log("clickDetection: " + clickDetector);
+
+                    clickDetector.SetBall(ball);
+
                     Debug.Log("ballTileSet");
 
                    ballSpawnLoop = false;
@@ -513,11 +525,11 @@ public class HexGrid : MonoBehaviour
         ITile tileScript = currentBallTile.GetComponent<ITile>();
         tileScript.GetCoordinates();
 
-        currentBallTile = chosenHex;
+        currentBallTile = chosenHex.transform.parent.gameObject;
         ballController.SetHexGrid(currentBallTile);
 
         //If hex is the holeTile. Start End Hole Cycle.
-        if (chosenHex == holeTile)
+        if (currentBallTile == holeTile)
         {
             HoleCycle();
 

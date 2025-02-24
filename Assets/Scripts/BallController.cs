@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BallController : MonoBehaviour
 {
@@ -16,10 +17,11 @@ public class BallController : MonoBehaviour
     [SerializeField] float t = 0f;
     [SerializeField] bool isMoving = false;
     [SerializeField] GameObject ballTile;
+    [SerializeField] private Pathfinding pathfinder;
 
     void Start()
     {
-       
+        pathfinder = GameObject.FindGameObjectWithTag("MapBuilder").GetComponent<Pathfinding>();
     }
 
     // Update is called once per frame
@@ -32,10 +34,12 @@ public class BallController : MonoBehaviour
     }
 
 
-    public void AccuracyCheck()
+    public void CalculateHit()
     {
 
+      //  List<ITile> path = pathfinder.FindPath(Mathf.RoundToInt(ballTile.GetCoordinates().x), Mathf.RoundToInt(ballTile.GetCoordinates().y), Mathf.RoundToInt(selectedTile.GetCoordinates().x), Mathf.RoundToInt(selectedTile.GetCoordinates().y));
 
+      //  Debug.Log("Length is: " + pathfinder.GetPathLength(path));
 
 
 

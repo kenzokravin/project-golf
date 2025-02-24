@@ -65,6 +65,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -7511558181221131132, guid: 0117547d809ad2a4a9aa2d39cacd15cd, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 0117547d809ad2a4a9aa2d39cacd15cd, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: bdbc63eca64a54d41837779d66bef43e, type: 2}
@@ -98,3 +102,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tileType: Water
+  coordinates: {x: 0, y: 0}
+  selected: 0
+  gCost: 0
+  fCost: 0
+  hCost: 0

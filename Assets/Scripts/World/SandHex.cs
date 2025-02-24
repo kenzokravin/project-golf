@@ -46,13 +46,13 @@ public class SandHex : MonoBehaviour, ITile
         {
            // Debug.Log(gameObject.name + " was clicked!");
             // Perform any action like changing color
-            GetComponent<Renderer>().material.color = Color.red;
+         //   GetComponent<Renderer>().material.color = Color.red;
         } else
         {
 
            // Debug.Log(gameObject.name + " was un-clicked!");
             // Perform any action like changing color
-            GetComponent<Renderer>().material.color = Color.yellow;
+         //   GetComponent<Renderer>().material.color = Color.yellow;
 
         }
 
