@@ -51,7 +51,7 @@ public class FairwayHex : MonoBehaviour, ITile
 
         if (gameObject.transform.parent.gameObject.transform.position.y < lowerBounds || gameObject.transform.parent.gameObject.transform.position.y > upperBounds)
         {
-               Debug.Log("upperBounds: " + upperBounds + " with a y of: " + gameObject.transform.parent.gameObject.transform.position.y);
+          //     Debug.Log("upperBounds: " + upperBounds + " with a y of: " + gameObject.transform.parent.gameObject.transform.position.y);
 
             grid.PoolHex(gameObject.transform.parent.gameObject, this);
         }

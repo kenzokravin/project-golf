@@ -119,8 +119,8 @@ public class Pathfinding : MonoBehaviour
     {
 
         
-        ITile startTile = hexGrid.GetHex(startX, startY).GetComponent<ITile>();
-        ITile endTile = hexGrid.GetHex(endX, endY).GetComponent<ITile>();
+        ITile startTile = hexGrid.GetHex(startX, startY).GetComponentInChildren<ITile>();
+        ITile endTile = hexGrid.GetHex(endX, endY).GetComponentInChildren<ITile>();
 
 
         openList = new List<ITile>() { startTile };
@@ -136,7 +136,7 @@ public class Pathfinding : MonoBehaviour
             {
               //  Debug.Log("Finding Hex at x: " + x + ", y: " + y);
 
-                ITile hex = hexGrid.GetHex(x, y).GetComponent<ITile>();
+                ITile hex = hexGrid.GetHex(x, y).GetComponentInChildren<ITile>();
 
                 hex.SetGCost(int.MaxValue);
                 hex.CalculateFCost();
@@ -225,6 +225,9 @@ public class Pathfinding : MonoBehaviour
 
     private int CalculateDistanceCost(ITile a, ITile b)
     {
+        Debug.Log("a: " + a.GetPosition());
+        Debug.Log("b: " + b.GetPosition());
+
 
         return Mathf.RoundToInt(MOVE_STRAIGHT_COST * Vector3.Distance(a.GetPosition(), b.GetPosition()));
 

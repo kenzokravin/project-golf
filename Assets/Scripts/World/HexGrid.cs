@@ -339,7 +339,7 @@ public class HexGrid : MonoBehaviour
 
         Debug.Log("Lowest Y: " + lowestY);
 
-        maxHexHeight = tileSize * mapHeight;
+        maxHexHeight = tileSize * mapHeight * 0.75f;
 
 
         Vector3 startPosition = new Vector3(startX, -camBounds.y * .5f, 0);
@@ -375,8 +375,6 @@ public class HexGrid : MonoBehaviour
 
                }
 
-               
-
                 //Right now there is no way to have a seeded map, to do this, we would have to translate/offset the perlin noise each time it is regen. Thus maintaining the same seed.
 
 
@@ -384,7 +382,9 @@ public class HexGrid : MonoBehaviour
 
 
 
+                //This is checking if coords are the same as the hole gen coords.
 
+                Debug.Log("Current Val X: " + x + ", Y: " + (z + (holeNum != 0 ? mapHeight : 0)));
 
                 if (Mathf.Approximately(holeCoords.x, x) && Mathf.Approximately(holeCoords.y, (z + (holeNum != 0 ? mapHeight : 0))))
                 {
@@ -397,9 +397,9 @@ public class HexGrid : MonoBehaviour
                     //Need to add hole type script to hole.
                     if (CheckHexPoolWater(x, z, hexCoords, "Hole",waterValue))
                     {
-
-                       continue;
-                   }
+                        Debug.Log("Hole Pool Reached");
+                          continue;
+                    }
 
                     InitHole(startPosition, result.Item1,result.Item2, waterValue);
 
@@ -416,8 +416,6 @@ public class HexGrid : MonoBehaviour
                     //This is setting the width tiles to the water tiles.
 
                     Vector3 position = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f, 0.05f, waterValue / noiseThreshold)));
-
-                  //  Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
 
                     if (CheckHexPoolWater(x, z, position,"Water",0))
                     {
@@ -441,18 +439,6 @@ public class HexGrid : MonoBehaviour
 
                 } else {
 
-
-                    if(hexCoords.y > (camBounds.y * 0.5f) - (4*tileHeight))
-                    {
-
-                        //Debug.Log("ABOVE Line");
-
-                    }
-              
-
-
-                
-
                     bool isWater = waterValue < noiseThreshold;
 
                     if (isWater)
@@ -461,8 +447,6 @@ public class HexGrid : MonoBehaviour
                         Vector3 positionWater = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0.02f,0.07f,waterValue/noiseThreshold)));
 
                         //May be issue with array size causing memory issues.
-
-                        //Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
 
                         if (CheckHexPoolWater(x,z,positionWater,"Water",0))
                         {
@@ -492,7 +476,7 @@ public class HexGrid : MonoBehaviour
                     } else
                     {
 
-                    //    Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
+                   
                         InitLandTile(hexCoords.x, hexCoords.y, waterValue, x, z);
 
                     }
@@ -528,15 +512,19 @@ public class HexGrid : MonoBehaviour
 
         Vector3 hexCoords = GetHexCoords(x, y) + startPosition;
 
+    //    Debug.Log("Hole GENNN");
 
         GameObject hole = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,-tileHeight), Quaternion.Euler(-90, 0, 0));
         holeTile = hole;
-       ITile tileScript = hole.GetComponent<ITile>();
-        //tileScript.SetUpperBounds(maxHexHeight);
+       ITile tileScript = hole.GetComponentInChildren<ITile>();
+        tileScript.SetUpperBounds(maxHexHeight);
         tileScript.AssignCoordinate(x, y);
 
-        ITile tileChildScript = hole.GetComponentInChildren<ITile>();
-        tileChildScript.SetUpperBounds(maxHexHeight);
+
+        Debug.Log("Hole GENNN: " + hole);
+
+        //   ITile tileChildScript = hole.GetComponentInChildren<ITile>();
+        //  tileChildScript.SetUpperBounds(maxHexHeight);
 
 
         activeTiles.Add(hole);
@@ -696,7 +684,7 @@ public class HexGrid : MonoBehaviour
 
             for (int i = 0; i < activeTiles.Count; i++)
             {
-                ITile tileScript = activeTiles[i].GetComponent<ITile>();
+                ITile tileScript = activeTiles[i].GetComponentInChildren<ITile>();
 
                 if (tileScript.GetCoordinates() == new Vector2(x, z))
                 {
@@ -853,7 +841,7 @@ public class HexGrid : MonoBehaviour
         for(int i = 0;i < activeTiles.Count; i++)
         {
 
-            ITile tile = activeTiles[i].GetComponent<ITile>();
+            ITile tile = activeTiles[i].GetComponentInChildren<ITile>();
 
             if(tile.GetCoordinates().x == x && tile.GetCoordinates().y == y)
             {

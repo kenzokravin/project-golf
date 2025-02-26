@@ -73,7 +73,7 @@ public class ClickDetector : MonoBehaviour
                // Debug.Log("Clicked on: " + hit.collider.gameObject.name);
 
                 // If the object has a specific script
-                ITile clickable = hit.collider.gameObject.GetComponent<ITile>();
+                ITile clickable = hit.collider.gameObject.GetComponentInChildren<ITile>();
                 if (clickable != null)
                 {
                     if(selected)
@@ -84,7 +84,7 @@ public class ClickDetector : MonoBehaviour
 
                            
                             
-                            ITile confirmTile = clickedTile.GetComponent<ITile>();
+                            ITile confirmTile = clickedTile.GetComponentInChildren<ITile>();
 
                             confirmTile.OnConfirm();
 
@@ -101,7 +101,7 @@ public class ClickDetector : MonoBehaviour
                         else
                         {
 
-                            ITile previousTile = clickedTile.GetComponent<ITile>();
+                            ITile previousTile = clickedTile.GetComponentInChildren<ITile>();
                             previousTile.OnClick();
                             selected = false;
 
