@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 
 public class HexGrid : MonoBehaviour
 {
@@ -109,7 +110,15 @@ public class HexGrid : MonoBehaviour
         //2. For each hex despawned, spawn a new one above and move into position.
         //3. To despawn, add a method that checks if the tile is below the camera bounds. (this might have to be in the tile script. We can then pool the hex.)
 
+        //Maybe to reduce impact of tweens, could place all active tiles into empty, tween empty, then remove empty (or reset it to 0,0 and then add all new active tiles?)
 
+        for (int i = activeTiles.Count -1; i >= 0; i--)
+        {
+            activeTiles[i].transform.DOMove(new Vector3(activeTiles[i].transform.position.x, (activeTiles[i].transform.position.y - (GetCameraBounds().y)), 0), 2f);
+
+
+
+        }
         
 
 
@@ -718,7 +727,8 @@ public class HexGrid : MonoBehaviour
 
         if (holeNum > 0)
         {
-            ShiftHexPositions();
+          //  ShiftHexPositions();
+          MoveHexes();
             //Move the holes
 
         }

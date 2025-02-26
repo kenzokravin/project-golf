@@ -6,7 +6,7 @@ public class SandHex : MonoBehaviour, ITile
     [SerializeField] private Vector2 coordinates;
     [SerializeField] private bool selected = false;
 
-    private Camera cam;
+    public Camera cam;
     private HexGrid grid;
     [SerializeField] private int gCost;
     [SerializeField] private int fCost;
@@ -26,6 +26,9 @@ public class SandHex : MonoBehaviour, ITile
 
         Vector2 camBounds = GetCameraBounds();
 
+        Debug.Log("Cam Bounds for pool despawn: " + -(camBounds.y * .5f));
+        lowerBounds = -(camBounds.y * .5f);
+
     }
 
     // Update is called once per frame
@@ -42,8 +45,10 @@ public class SandHex : MonoBehaviour, ITile
         //Or would it? Not sure. This might not affect it because the limit is dependent on world position, not coords. World limit has to be less than the lowest coord (where y=0 for hex coord) 
 
 
-        if(gameObject.transform.position.y < -camBounds.y * .5f)
+        if(gameObject.transform.parent.gameObject.transform.position.y < lowerBounds)
         {
+            Debug.Log(gameObject.transform.parent.gameObject.transform.position.y);
+
             grid.PoolHex(gameObject.transform.parent.gameObject, this);
         }
       //  grid.PoolHex(gameObject.transform.parent.gameObject,this);
@@ -54,8 +59,8 @@ public class SandHex : MonoBehaviour, ITile
 
     private Vector2 GetCameraBounds()
     {
-        float camHeight = 2f * mainCam.orthographicSize;
-        float camWidth = camHeight * mainCam.aspect;
+        float camHeight = 2f * cam.orthographicSize;
+        float camWidth = camHeight * cam.aspect;
 
         return new Vector2(camWidth, camHeight);
 
