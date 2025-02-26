@@ -40,7 +40,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4254506973535346537}
-  - component: {fileID: 6731489196319618861}
   - component: {fileID: 1133051095654339545}
   m_Layer: 0
   m_Name: Fairway1
@@ -66,24 +65,6 @@ Transform:
   - {fileID: 7936764006310635840}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6731489196319618861
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4291572686106679555}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0c6c8fc2d3750704fb289dca717f208e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tileType: Fairway
-  coordinates: {x: 0, y: 0}
-  selected: 0
-  gCost: 0
-  fCost: 0
-  hCost: 0
 --- !u!64 &1133051095654339545
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -222,6 +203,9 @@ MonoBehaviour:
   gCost: 0
   fCost: 0
   hCost: 0
+  cam: {fileID: 0}
+  lowerBounds: 0
+  upperBounds: 0
 --- !u!4 &7936764006310635840 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a53c75f4fb2e2d640804a25687cb8f76, type: 3}

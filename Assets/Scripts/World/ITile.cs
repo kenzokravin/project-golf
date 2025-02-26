@@ -29,4 +29,5 @@ public interface ITile
 
     ITile GetCameFromTile();
 
+    void SetUpperBounds(float height);
 }

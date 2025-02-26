@@ -87,9 +87,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 24813068dcf994c40b1028e757224434, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3672796100044355957}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 24813068dcf994c40b1028e757224434, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 6548289565959785051}
     - targetCorrespondingSourceObject: {fileID: -1688617927700330159, guid: 24813068dcf994c40b1028e757224434, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5569728528469819624}
@@ -124,24 +121,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 0}
---- !u!114 &6548289565959785051
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4516752593843439165}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37aaf01345f1f9c4ca8e10eed1171f17, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  tileType: Rough
-  coordinates: {x: 0, y: 0}
-  selected: 0
-  gCost: 0
-  fCost: 0
-  hCost: 0
 --- !u!1 &6556961426093716029 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -1688617927700330159, guid: 24813068dcf994c40b1028e757224434, type: 3}
@@ -165,6 +144,9 @@ MonoBehaviour:
   gCost: 0
   fCost: 0
   hCost: 0
+  cam: {fileID: 0}
+  lowerBounds: 0
+  upperBounds: 0
 --- !u!64 &4647989691230317918
 MeshCollider:
   m_ObjectHideFlags: 0

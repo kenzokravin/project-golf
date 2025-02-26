@@ -14,7 +14,7 @@ public class SandHex : MonoBehaviour, ITile
 
     [SerializeField] public ITile cameFromTile;
     public float lowerBounds;
-
+    public float upperBounds;
     Vector2 camBounds;
 
 
@@ -26,15 +26,20 @@ public class SandHex : MonoBehaviour, ITile
 
         Vector2 camBounds = GetCameraBounds();
 
-        Debug.Log("Cam Bounds for pool despawn: " + -(camBounds.y * .5f));
+     //   Debug.Log("Cam Bounds for pool despawn: " + -(camBounds.y * .5f));
         lowerBounds = -(camBounds.y * .5f);
-
+        //upperBounds = 16f;
     }
 
     // Update is called once per frame
     void Update()
     {
         CheckDespawn();
+    }
+
+    public void SetUpperBounds(float height)
+    {
+        upperBounds = height;
     }
 
     private void CheckDespawn()
@@ -45,9 +50,9 @@ public class SandHex : MonoBehaviour, ITile
         //Or would it? Not sure. This might not affect it because the limit is dependent on world position, not coords. World limit has to be less than the lowest coord (where y=0 for hex coord) 
 
 
-        if(gameObject.transform.parent.gameObject.transform.position.y < lowerBounds)
+        if(gameObject.transform.parent.gameObject.transform.position.y < lowerBounds  || gameObject.transform.parent.gameObject.transform.position.y > upperBounds)
         {
-            Debug.Log(gameObject.transform.parent.gameObject.transform.position.y);
+         //   Debug.Log(gameObject.transform.parent.gameObject.transform.position.y);
 
             grid.PoolHex(gameObject.transform.parent.gameObject, this);
         }

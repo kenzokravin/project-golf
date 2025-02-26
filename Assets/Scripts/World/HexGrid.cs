@@ -47,6 +47,8 @@ public class HexGrid : MonoBehaviour
     [SerializeField] private List<GameObject> activeTiles;
     [SerializeField] private List<GameObject> pooledTiles;
 
+    [SerializeField] private GameObject movingCont;
+    public float maxHexHeight;
 
 
     void Start()
@@ -61,7 +63,7 @@ public class HexGrid : MonoBehaviour
 
 
         holeNum = 0;
-        MakeMapGrid();
+        InitializeMapGrid();
         clickDetector = GetComponent<ClickDetector>();
         pooledTiles = new List<GameObject>();
         isInitializing = false;
@@ -96,8 +98,12 @@ public class HexGrid : MonoBehaviour
 
         //Could call spawn next hex here?
         //This would mean for each despawned hex, a new hex is spawned.
-      //  ITile tile = hexToPool.GetComponentInChildren<ITile>();
-        SpawnNextHex(tile);
+        //  ITile tile = hexToPool.GetComponentInChildren<ITile>();
+
+        if (holeNum != 0)
+        {
+            SpawnNextHex(tile);
+        }
 
     }
 
@@ -112,15 +118,34 @@ public class HexGrid : MonoBehaviour
 
         //Maybe to reduce impact of tweens, could place all active tiles into empty, tween empty, then remove empty (or reset it to 0,0 and then add all new active tiles?)
 
+        //Another note: To ensure pooled Tiles are available, we could Instantiate 2 holes at start, storing the 2nd hole hexes as pooled. Then when they are required, activate them and send move them into position.
+
+
+
+        GameObject movingContainer = Instantiate(movingCont,gameObject.transform);
+
+
         for (int i = activeTiles.Count -1; i >= 0; i--)
         {
-            activeTiles[i].transform.DOMove(new Vector3(activeTiles[i].transform.position.x, (activeTiles[i].transform.position.y - (GetCameraBounds().y)), 0), 2f);
+            // activeTiles[i].transform.DOMove(new Vector3(activeTiles[i].transform.position.x, (activeTiles[i].transform.position.y - (GetCameraBounds().y)), 0), 2f);
 
-
+            activeTiles[i].transform.SetParent(movingContainer.transform);
 
         }
-        
 
+        movingContainer.transform.DOMove(new Vector3(0, -(GetCameraBounds().y), 0), 2f)
+          .SetEase(Ease.Linear)
+          .OnComplete(() =>
+          {
+                // Unparent objects
+                foreach (GameObject obj in activeTiles)
+              {
+                  obj.transform.SetParent(gameObject.transform);
+              }
+
+                // Destroy the container
+                Destroy(movingContainer);
+          });
 
 
 
@@ -239,7 +264,7 @@ public class HexGrid : MonoBehaviour
 
 
 
-    void MakeMapGrid()
+    void InitializeMapGrid()
     {
 
         if(holeNum != 0)
@@ -314,7 +339,7 @@ public class HexGrid : MonoBehaviour
 
         Debug.Log("Lowest Y: " + lowestY);
 
-
+        maxHexHeight = tileSize * mapHeight;
 
 
         Vector3 startPosition = new Vector3(startX, -camBounds.y * .5f, 0);
@@ -332,7 +357,7 @@ public class HexGrid : MonoBehaviour
 
 
 
-        for (int z = 0; z < mapHeight; z++)
+        for (int z = 0; z < mapHeight * 2; z++)
         {
 
 
@@ -404,7 +429,11 @@ public class HexGrid : MonoBehaviour
                     GameObject tile = Instantiate(outTilePrefab, position, Quaternion.Euler(0,0,90));
                     ITile tileScript = tile.GetComponent<ITile>();
                     tileScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
+                   // tileScript.SetUpperBounds(maxHexHeight);
                     tile.transform.parent = transform;
+
+                    ITile tileChildScript = tile.GetComponentInChildren<ITile>();
+                    tileChildScript.SetUpperBounds(maxHexHeight);
 
                     activeTiles.Add(tile);
 
@@ -448,8 +477,13 @@ public class HexGrid : MonoBehaviour
 
                             ITile tileWaterScript = tileWater.GetComponent<ITile>();
                             tileWaterScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
+                         tileWaterScript.SetUpperBounds(maxHexHeight);
 
-                            activeTiles.Add(tileWater);
+                        ITile tileChildScript = tileWater.GetComponentInChildren<ITile>();
+                        tileChildScript.SetUpperBounds(maxHexHeight);
+
+
+                        activeTiles.Add(tileWater);
 
                             continue;
 
@@ -498,7 +532,13 @@ public class HexGrid : MonoBehaviour
         GameObject hole = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,-tileHeight), Quaternion.Euler(-90, 0, 0));
         holeTile = hole;
        ITile tileScript = hole.GetComponent<ITile>();
+        //tileScript.SetUpperBounds(maxHexHeight);
         tileScript.AssignCoordinate(x, y);
+
+        ITile tileChildScript = hole.GetComponentInChildren<ITile>();
+        tileChildScript.SetUpperBounds(maxHexHeight);
+
+
         activeTiles.Add(hole);
 
       
@@ -614,7 +654,24 @@ public class HexGrid : MonoBehaviour
 
         GameObject tile = Instantiate(landHex, position, Quaternion.Euler(-90, 0, 0));
         ITile tileScript = tile.GetComponentInChildren<ITile>();
+         tileScript.SetUpperBounds(maxHexHeight);
         tileScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
+
+        foreach (Transform child in tile.transform.GetComponentsInChildren<Transform>())
+        {
+            if (child.CompareTag("Hex"))
+            {
+                Debug.Log(child);
+                ITile tileChildScript = child.GetComponent<ITile>();
+                tileChildScript.SetUpperBounds(maxHexHeight);
+
+                break;
+            }
+        }
+
+
+      
+
 
         activeTiles.Add(tile);
         tile.transform.parent = transform;
@@ -722,7 +779,10 @@ public class HexGrid : MonoBehaviour
 
         //Making next hole level.
         //Maybe not use hole number to scale y? If it goes to hole two, it will use the double multiply
-        MakeMapGrid();
+
+
+
+     //   MakeMapGrid();
 
 
         if (holeNum > 0)
