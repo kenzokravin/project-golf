@@ -8,6 +8,7 @@ public class HexGrid : MonoBehaviour
     [SerializeField] public int mapWidth = 10;
     [SerializeField] public int mapHeight = 10;
     public float tileSize = 1;
+    private float tileHorizWidth;
 
     public GameObject defaultHexPrefab;
     public GameObject fairwayPrefab;
@@ -31,6 +32,7 @@ public class HexGrid : MonoBehaviour
     [SerializeField] private int courseWidth;
     [SerializeField] private Vector3 startTilePosition;
     [SerializeField] private float landHeightValue = 0.05f;
+    private Vector3 startGenPosition;
 
 
     public Camera mainCam;
@@ -73,9 +75,169 @@ public class HexGrid : MonoBehaviour
 
     }
 
+    public void PoolHex(GameObject hexToPool, ITile tile)
+    {
+
+        //This will be called in tile script when they reach the bounds of the camera.
+
+        for (int i = activeTiles.Count - 1; i >= 0; i--)
+        {
+            if (activeTiles[i] == hexToPool)
+            {
+                activeTiles.RemoveAt(i);
+
+                pooledTiles.Add(hexToPool);
+                hexToPool.SetActive(false);
+                break;
+
+            }
+        }
+
+        //Could call spawn next hex here?
+        //This would mean for each despawned hex, a new hex is spawned.
+      //  ITile tile = hexToPool.GetComponentInChildren<ITile>();
+        SpawnNextHex(tile);
+
+    }
+
+
+    private void MoveHexes()
+    {
+
+        //Order of Operations for lazy loading of hexes (hoping to increase performance.
+        //1. Cycle through and move each hex (using a tween or otherwise) down to new position.
+        //2. For each hex despawned, spawn a new one above and move into position.
+        //3. To despawn, add a method that checks if the tile is below the camera bounds. (this might have to be in the tile script. We can then pool the hex.)
+
+
+        
+
+
+
+
+    }
+
+    public void SpawnNextHex(ITile despawnedTile)
+    {
+
+        //This method will be called in each tile script when they are despawned.
+
+        //float yCoord = despawnedTile.GetCoordinates().y + mapHeight;
+
+        //Generating the hexCoords using an adjusted y position (given the coords of the despawned tile).
+        Vector3 hexCoords = GetHexCoords((int)despawnedTile.GetCoordinates().x, ((int)despawnedTile.GetCoordinates().y + (holeNum != 0 ? mapHeight : 0))) + startGenPosition;
+
+
+        //This will spawn the next Hex
+        CheckWaterValue(hexCoords, (int)despawnedTile.GetCoordinates().x, (int)despawnedTile.GetCoordinates().y);
+       
+
+    }
+
+    private void CheckWaterValue(Vector3 hexCoords, int xCoord, int yCoord)
+    {
+        Vector2 camBounds = GetCameraBounds();
+
+        //Determining the noise offsetValue
+        float noiseOffset = holeNum * mapHeight;
+
+        if (noiseSeed == -1)
+        {
+            noiseSeed = Random.Range(0, 10000);
+
+        }
+
+        //Generating waterValue to determine if water hex or not.
+        float waterValue = Mathf.PerlinNoise(((hexCoords.x) * noiseSeed) / noiseFrequency, ((hexCoords.y + noiseOffset) * noiseSeed) / noiseFrequency);
+
+        if (hexCoords.x - (tileHorizWidth * 0.75f) <= -camBounds.x * .5f || hexCoords.x + (tileHorizWidth * 0.75f) >= camBounds.x * .5f)
+        {
+            //This is setting the width tiles to the water tiles.
+
+            Vector3 position = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f, 0.05f, waterValue / noiseThreshold)));
+
+            //  Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
+
+            if (CheckHexPoolWater(xCoord, yCoord, position, "Water", 0))
+            {
+
+                // continue;
+                return;
+            }
+
+
+            GameObject tile = Instantiate(outTilePrefab, position, Quaternion.Euler(0, 0, 90));
+            ITile tileScript = tile.GetComponent<ITile>();
+            tileScript.AssignCoordinate(xCoord, (yCoord + (holeNum != 0 ? mapHeight : 0)));
+            tile.transform.parent = transform;
+
+            activeTiles.Add(tile);
+
+
+
+        }
+        else
+        {
+
+            bool isWater = waterValue < noiseThreshold;
+
+            if (isWater)
+            {
+
+                Vector3 positionWater = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0.02f, 0.07f, waterValue / noiseThreshold)));
+
+                //May be issue with array size causing memory issues.
+
+                //Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
+
+                if (CheckHexPoolWater(xCoord, yCoord, positionWater, "Water", 0))
+                {
+
+                    return;
+                }
+
+
+
+                GameObject tileWater = Instantiate(outTilePrefab, positionWater, Quaternion.Euler(0, 0, 90));
+                tileWater.transform.parent = transform;
+
+                ITile tileWaterScript = tileWater.GetComponent<ITile>();
+                tileWaterScript.AssignCoordinate(xCoord, (yCoord + (holeNum != 0 ? mapHeight : 0)));
+
+                activeTiles.Add(tileWater);
+
+                return;
+
+
+
+            }
+            else
+            {
+
+                //    Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
+                InitLandTile(hexCoords.x, hexCoords.y, waterValue, xCoord, yCoord);
+
+            }
+
+        }
+    
+
+
+
+    }
+
+
+
+
 
     void MakeMapGrid()
     {
+
+        if(holeNum != 0)
+        {
+       //     return;
+        }
+
         isInitializing = true;
 
         if (fairwayPrefab == null)
@@ -85,12 +247,12 @@ public class HexGrid : MonoBehaviour
 
         MeshRenderer renderer = defaultHexPrefab.GetComponentInChildren<MeshRenderer>();
 
-
-
         Vector3 size = renderer.bounds.size;
             float tileWidth = size.x;
             float tileHeight = size.y;
             tileSize = tileHeight;
+
+        tileHorizWidth = tileWidth;
 
             Vector2 camBounds = GetCameraBounds();
 
@@ -149,6 +311,7 @@ public class HexGrid : MonoBehaviour
         Vector3 startPosition = new Vector3(startX, -camBounds.y * .5f, 0);
 
         startTilePosition = startPosition;
+        startGenPosition = startPosition;   
 
 
         var result = GenerateHoleCoords(tileHorizontalNum);
@@ -522,10 +685,12 @@ public class HexGrid : MonoBehaviour
 
        // ballController.Jump(currentBallTile,chosenHex);
 
-        ITile tileScript = currentBallTile.GetComponent<ITile>();
+        ITile tileScript = currentBallTile.GetComponentInChildren<ITile>();
         tileScript.GetCoordinates();
 
-        currentBallTile = chosenHex.transform.parent.gameObject;
+
+
+        currentBallTile = chosenHex;
         ballController.SetHexGrid(currentBallTile);
 
         //If hex is the holeTile. Start End Hole Cycle.
@@ -825,6 +990,7 @@ public class HexGrid : MonoBehaviour
     {
         return activeTiles;
     }
+
 
 
 

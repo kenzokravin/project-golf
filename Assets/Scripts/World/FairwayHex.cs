@@ -83,7 +83,7 @@ public class FairwayHex : MonoBehaviour, ITile
 
             Debug.Log(gameObject.name + " was clicked!");
             // Perform any action like changing color
-            GetComponent<Renderer>().material.color = Color.red;
+        //    GetComponent<Renderer>().material.color = Color.red;
 
 
         }

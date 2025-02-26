@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using System.Collections.Generic;
 
 public class ClickDetector : MonoBehaviour
@@ -11,6 +12,9 @@ public class ClickDetector : MonoBehaviour
 
     private Pathfinding pathfinder;
     private HexGrid hexGrid;
+
+    private Touch touch;
+    private Vector3 dragStartPos;
 
     private void Start()
     {
@@ -31,6 +35,34 @@ public class ClickDetector : MonoBehaviour
 
     void Update()
     {
+
+        //These deal with touch events for phone controls.
+        if (Input.touchCount > 0)
+        {
+           // touch = Input.GetTouch(0);
+
+           // if(touch.phase == TouchPhase.Began)
+           // {
+                DragStart();
+
+          //  }
+
+         //   if (touch.phase == TouchPhase.Moved)
+          //  {
+                Dragging();
+
+          //  }
+        //
+           // if (touch.phase == TouchPhase.Ended)
+            {
+                DragRelease();
+
+                
+
+            }
+
+        }
+
         if (Input.GetMouseButtonDown(0)) // Left-click
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -47,7 +79,7 @@ public class ClickDetector : MonoBehaviour
                     if(selected)
                     {
 
-                        if(hit.collider.gameObject == clickedTile)
+                        if(hit.collider.gameObject.transform.parent.gameObject == clickedTile)
                         {
 
                            
@@ -61,7 +93,7 @@ public class ClickDetector : MonoBehaviour
 
                             ball.Jump(hexGrid.RetreiveCurrentBallTile(), clickedTile);
 
-                            hexGrid.SwapActiveHex(hit.collider.gameObject);
+                            hexGrid.SwapActiveHex(hit.collider.gameObject.transform.parent.gameObject);
 
                             selected = false;
 
@@ -87,7 +119,7 @@ public class ClickDetector : MonoBehaviour
 
                     clickedTile = hit.collider.gameObject.transform.parent.gameObject;
 
-                    ITile ballTile = hexGrid.RetreiveCurrentBallTile().GetComponent<ITile>();
+                    ITile ballTile = hexGrid.RetreiveCurrentBallTile().GetComponentInChildren<ITile>();
                     ITile selectedTile = clickedTile.GetComponentInChildren<ITile>();
 
                     Debug.Log(pathfinder);
@@ -103,6 +135,34 @@ public class ClickDetector : MonoBehaviour
             }
         }
     }
+
+    void DragStart()
+    {
+        dragStartPos = Camera.main.ScreenToWorldPoint(touch.position);
+        dragStartPos.z = 0;
+    }
+
+    void Dragging()
+    {
+
+        Vector3 draggingPos = Camera.main.ScreenToWorldPoint(touch.position);
+        draggingPos.z = 0;
+    }
+
+    void DragRelease()
+    {
+        Vector3 dragReleasePos = Camera.main.ScreenToWorldPoint(touch.position);
+        dragReleasePos.z = 0;
+
+        Debug.Log(dragReleasePos);
+    }
+
+
+
+
+
+
+
 
     private void CalculateHit(GameObject tileWithBall, GameObject targetTile)
     {
