@@ -48,8 +48,11 @@ public class HexGrid : MonoBehaviour
     [SerializeField] private List<GameObject> pooledTiles;
 
     [SerializeField] private GameObject movingCont;
+    public Vector3 lastSpawnPosition;
+    public GameObject movingContainer;
     public float maxHexHeight;
     public float highestCoordPooled;
+    public bool isSpawning = false;
 
 
     void Start()
@@ -70,12 +73,13 @@ public class HexGrid : MonoBehaviour
         isInitializing = false;
         poolCounter = 0;
         highestCoordPooled = -1f;
+        movingContainer = null;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        TrackHexMovement();
         
 
     }
@@ -109,6 +113,8 @@ public class HexGrid : MonoBehaviour
 
                 activeTiles.RemoveAt(i);
 
+                hexToPool.transform.position = new Vector3(0, 0, 0);
+
                 pooledTiles.Add(hexToPool);
                 hexToPool.SetActive(false);
                 break;
@@ -118,17 +124,18 @@ public class HexGrid : MonoBehaviour
 
         //Could call spawn next hex here?
         //This would mean for each despawned hex, a new hex is spawned.
-        //  ITile tile = hexToPool.GetComponentInChildren<ITile>();
 
         //find out why y coord is set to -28 at start (should be 0 no?
 
         if (holeNum != 0)
         {
            // ReassignCoords();
-            SpawnNextHex(tile);
+          //  SpawnNextHex(tile);
+            
         }
 
     }
+
 
 
     private void ReassignCoords()
@@ -150,7 +157,44 @@ public class HexGrid : MonoBehaviour
 
     }
 
+    private void TrackHexMovement()
+    {
+        //Ok, to spawn object, make sure that position is tracked so that once, the container has moved down one tile, it can begin to spawn the next row
+        //(or just spawn one singular row if we want to lazy load row by row.)
 
+        if (movingContainer == null) return;
+
+       // Debug.Log("movingCont y pos: " + movingContainer.transform.position.y + ", tile spawn distance: " + (lastSpawnPosition.y - movingContainer.transform.position.y));
+
+
+        if (lastSpawnPosition.y - movingContainer.transform.position.y > tileSize)
+        {
+            SpawnNextRow();
+            //perhaps call spawn next row here?
+
+            Debug.Log("Spawn next row");
+            lastSpawnPosition = movingContainer.transform.position;
+        }
+}
+
+
+    private void SpawnNextRow()
+    {
+
+        for (int x = 0; x < mapWidth; x++)
+        {
+
+            Vector3 hexCoords = GetNextHexCoords(x ,mapHeight) + startGenPosition;
+
+
+            CheckWaterValue(hexCoords,x,mapHeight);
+
+
+        }
+
+
+
+    }
 
     private void MoveHexes()
     {
@@ -165,21 +209,17 @@ public class HexGrid : MonoBehaviour
         //Another note: To ensure pooled Tiles are available, we could Instantiate 2 holes at start, storing the 2nd hole hexes as pooled. Then when they are required, activate them and send move them into position.
 
 
-
-        GameObject movingContainer = Instantiate(movingCont,gameObject.transform);
+        movingContainer = Instantiate(movingCont,gameObject.transform);
+        lastSpawnPosition = movingContainer.transform.position;
+        Debug.Log("lastSpawn: " + lastSpawnPosition);
 
 
         for (int i = activeTiles.Count -1; i >= 0; i--)
         {
-            // activeTiles[i].transform.DOMove(new Vector3(activeTiles[i].transform.position.x, (activeTiles[i].transform.position.y - (GetCameraBounds().y)), 0), 2f);
 
             activeTiles[i].transform.SetParent(movingContainer.transform);
 
-            //Shifting y coords down by the map height. A solution could be, before instantiating, checking whether the coord exists already.
-            //This doesn't work because it doesn't move by a whole height. It only moves by the visual height (camera bounds).
-            //Potentially, could find the highest y-coord that gets pooled and then use that value to reassign coords.
             ITile activeTile = activeTiles[i].GetComponentInChildren<ITile>();
-          //  activeTile.AssignCoordinate(activeTile.GetCoordinates().x,activeTile.GetCoordinates().y);
 
         }
 
@@ -195,6 +235,7 @@ public class HexGrid : MonoBehaviour
 
                 // Destroy the container
                 Destroy(movingContainer);
+               movingContainer = null;
           });
 
 
@@ -206,10 +247,11 @@ public class HexGrid : MonoBehaviour
 
         //This method will be called in each tile script when they are despawned.
 
-        //float yCoord = despawnedTile.GetCoordinates().y + mapHeight;
-
         //Generating the hexCoords using an adjusted y position (given the coords of the despawned tile).
-        Vector3 hexCoords = GetHexCoords((int)despawnedTile.GetCoordinates().x, ((int)despawnedTile.GetCoordinates().y + (holeNum != 0 ? mapHeight : 0))) + startGenPosition;
+
+        Debug.Log("generating from y: " + ((int)despawnedTile.GetCoordinates().y + (holeNum != 0 ? mapHeight : 0)) );
+
+        Vector3 hexCoords = GetNextHexCoords((int)despawnedTile.GetCoordinates().x, ((int)despawnedTile.GetCoordinates().y + (holeNum != 0 ? mapHeight : 0))) + startGenPosition;
 
 
         //This will spawn the next Hex
@@ -240,7 +282,6 @@ public class HexGrid : MonoBehaviour
 
             Vector3 position = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f, 0.05f, waterValue / noiseThreshold)));
 
-            //  Debug.Log($"Current Z: {z}, Adjusted Z: {z + (holeNum != 0 ? mapHeight : 0)}");
 
             if (CheckHexPoolWater(xCoord, yCoord, position, "Water", 0))
             {
@@ -251,8 +292,8 @@ public class HexGrid : MonoBehaviour
 
 
             GameObject tile = Instantiate(outTilePrefab, position, Quaternion.Euler(0, 0, 90));
-            ITile tileScript = tile.GetComponent<ITile>();
-            tileScript.AssignCoordinate(xCoord, (yCoord + (holeNum != 0 ? mapHeight : 0)));
+            ITile tileScript = tile.GetComponentInChildren<ITile>();
+            tileScript.AssignCoordinate(xCoord, (yCoord));
             tile.transform.parent = transform;
 
             activeTiles.Add(tile);
@@ -285,8 +326,8 @@ public class HexGrid : MonoBehaviour
                 GameObject tileWater = Instantiate(outTilePrefab, positionWater, Quaternion.Euler(0, 0, 90));
                 tileWater.transform.parent = transform;
 
-                ITile tileWaterScript = tileWater.GetComponent<ITile>();
-                tileWaterScript.AssignCoordinate(xCoord, (yCoord + (holeNum != 0 ? mapHeight : 0)));
+                ITile tileWaterScript = tileWater.GetComponentInChildren<ITile>();
+                tileWaterScript.AssignCoordinate(xCoord, yCoord );
 
                 activeTiles.Add(tileWater);
 
@@ -434,7 +475,7 @@ public class HexGrid : MonoBehaviour
 
                 //This is checking if coords are the same as the hole gen coords.
 
-                Debug.Log("Current Val X: " + x + ", Y: " + (z + (holeNum != 0 ? mapHeight : 0)));
+             
 
                 if (Mathf.Approximately(holeCoords.x, x) && Mathf.Approximately(holeCoords.y, (z + (holeNum != 0 ? mapHeight : 0))))
                 {
@@ -511,7 +552,7 @@ public class HexGrid : MonoBehaviour
                             GameObject tileWater = Instantiate(outTilePrefab, positionWater, Quaternion.Euler(0, 0, 90));
                             tileWater.transform.parent = transform;
 
-                            ITile tileWaterScript = tileWater.GetComponent<ITile>();
+                            ITile tileWaterScript = tileWater.GetComponentInChildren<ITile>();
                             tileWaterScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
                          tileWaterScript.SetUpperBounds(maxHexHeight);
 
@@ -605,9 +646,30 @@ public class HexGrid : MonoBehaviour
         float xPos = x * tileSize * Mathf.Cos(Mathf.Deg2Rad * 30);
         float zPos = z * tileSize + ((x % 2 == 1) ? tileSize * .5f : 0);
 
-        return new Vector3(xPos, zPos,0);
+        Vector3 position = new Vector3(xPos, zPos, 0);
+
+
+
+        return position;
 
     }
+
+    private Vector3 GetNextHexCoords(int x, int y)
+    {
+        // This is used post initialization, as it has an increased y value.
+
+        float xPos = x * tileSize * Mathf.Cos(Mathf.Deg2Rad * 30);
+        float yPos = (y+1) * tileSize + ((x % 2 == 1) ? tileSize * .5f : 0);
+
+        Vector3 position = new Vector3(xPos, yPos, 0);
+
+        return transform.InverseTransformPoint(position);
+
+
+        return position;
+
+    }
+
 
     private Vector2 GetCameraBounds()
     {
@@ -666,7 +728,7 @@ public class HexGrid : MonoBehaviour
 
         if(CheckHexPoolWater(x, z, position, landTile, 0))
         {
-            Debug.Log("Pooled Land ObJ spawned, with a noise value: " + landValue);
+           // Debug.Log("Pooled Land ObJ spawned, with a noise value: " + landValue);
             return;
         };
 
@@ -696,8 +758,10 @@ public class HexGrid : MonoBehaviour
         ITile tileScript = tile.GetComponentInChildren<ITile>();
          tileScript.SetUpperBounds(maxHexHeight);
 
-        Debug.Log(z + (holeNum != 0 ? mapHeight : 0));
-        tileScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
+        Debug.Log("yVal of spawned hex: " + z);
+        tileScript.AssignCoordinate(x, (z ));
+
+
 
         foreach (Transform child in tile.transform.GetComponentsInChildren<Transform>())
         {
@@ -945,7 +1009,9 @@ public class HexGrid : MonoBehaviour
 
              
                 pooledTiles[i].transform.position = position;
-                pooledTile.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
+
+                Debug.Log("Pooled yVal: " + z);
+                pooledTile.AssignCoordinate(x, (z));
 
                 GameObject pooledObj = pooledTiles[i].gameObject;
 

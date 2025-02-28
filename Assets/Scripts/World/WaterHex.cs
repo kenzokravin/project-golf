@@ -19,6 +19,8 @@ public class WaterHex : MonoBehaviour, ITile
     public float upperBounds;
     Vector2 camBounds;
 
+    public bool isMoving;
+
     void Start()
     {
         grid = GameObject.FindGameObjectWithTag("MapBuilder").GetComponent<HexGrid>();
@@ -28,7 +30,8 @@ public class WaterHex : MonoBehaviour, ITile
 
         // Debug.Log("Cam Bounds for pool despawn: " + -(camBounds.y * .5f));
         lowerBounds = -(camBounds.y * .5f);
-      //  upperBounds = (camBounds.y * .5f);
+        //  upperBounds = (camBounds.y * .5f);
+        isMoving = false;
     }
 
     // Update is called once per frame
@@ -48,6 +51,12 @@ public class WaterHex : MonoBehaviour, ITile
         //Need to set lower limit of world position (could be done by setting the lower limit value when instantiated) (this would make it dependent on the user screen and also would mean that hexes aren't deactivated (which would lose their coords)).
         //For moving the hole down though, this might be difficult. As it won't have a full shift of all hexes by a set amount. This is because of different par holes.
         //Or would it? Not sure. This might not affect it because the limit is dependent on world position, not coords. World limit has to be less than the lowest coord (where y=0 for hex coord) 
+
+        if (isMoving == true)
+        {
+            return;
+        }
+
 
 
         if (gameObject.transform.parent.gameObject.transform.position.y < lowerBounds || gameObject.transform.parent.gameObject.transform.position.y > upperBounds)
