@@ -49,6 +49,7 @@ public class HexGrid : MonoBehaviour
 
     [SerializeField] private GameObject movingCont;
     public float maxHexHeight;
+    public float highestCoordPooled;
 
 
     void Start()
@@ -68,6 +69,7 @@ public class HexGrid : MonoBehaviour
         pooledTiles = new List<GameObject>();
         isInitializing = false;
         poolCounter = 0;
+        highestCoordPooled = -1f;
     }
 
     // Update is called once per frame
@@ -87,6 +89,24 @@ public class HexGrid : MonoBehaviour
         {
             if (activeTiles[i] == hexToPool)
             {
+
+              
+
+                if (tile.GetCoordinates().y > highestCoordPooled)
+                {
+                    if(holeNum != 0)
+                    {
+                        //This drops the y value of the current tiles, so y=0 is always the bottom-most tile.
+                        ReassignCoords();
+                    }
+                  
+
+                   
+                }
+
+                highestCoordPooled = tile.GetCoordinates().y;
+
+
                 activeTiles.RemoveAt(i);
 
                 pooledTiles.Add(hexToPool);
@@ -100,12 +120,36 @@ public class HexGrid : MonoBehaviour
         //This would mean for each despawned hex, a new hex is spawned.
         //  ITile tile = hexToPool.GetComponentInChildren<ITile>();
 
+        //find out why y coord is set to -28 at start (should be 0 no?
+
         if (holeNum != 0)
         {
+           // ReassignCoords();
             SpawnNextHex(tile);
         }
 
     }
+
+
+    private void ReassignCoords()
+    {
+        //This function will be used to reassign the y coords of the moving hex values. (should be done before they are moved?)
+        //
+
+        //It needs to reassign coords on the go (subtracting one for each row pooled.
+
+        for (int i = activeTiles.Count - 1; i >= 0; i--)
+        {
+           
+
+                ITile activeTile = activeTiles[i].GetComponentInChildren<ITile>();
+                activeTile.AssignCoordinate(activeTile.GetCoordinates().x, activeTile.GetCoordinates().y - 1);
+
+            
+        }
+
+    }
+
 
 
     private void MoveHexes()
@@ -130,6 +174,12 @@ public class HexGrid : MonoBehaviour
             // activeTiles[i].transform.DOMove(new Vector3(activeTiles[i].transform.position.x, (activeTiles[i].transform.position.y - (GetCameraBounds().y)), 0), 2f);
 
             activeTiles[i].transform.SetParent(movingContainer.transform);
+
+            //Shifting y coords down by the map height. A solution could be, before instantiating, checking whether the coord exists already.
+            //This doesn't work because it doesn't move by a whole height. It only moves by the visual height (camera bounds).
+            //Potentially, could find the highest y-coord that gets pooled and then use that value to reassign coords.
+            ITile activeTile = activeTiles[i].GetComponentInChildren<ITile>();
+          //  activeTile.AssignCoordinate(activeTile.GetCoordinates().x,activeTile.GetCoordinates().y);
 
         }
 
@@ -425,7 +475,9 @@ public class HexGrid : MonoBehaviour
 
 
                     GameObject tile = Instantiate(outTilePrefab, position, Quaternion.Euler(0,0,90));
-                    ITile tileScript = tile.GetComponent<ITile>();
+                    ITile tileScript = tile.GetComponentInChildren<ITile>();
+
+                    //Debug.Log((z + (holeNum != 0 ? mapHeight : 0)));
                     tileScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
                    // tileScript.SetUpperBounds(maxHexHeight);
                     tile.transform.parent = transform;
@@ -643,13 +695,15 @@ public class HexGrid : MonoBehaviour
         GameObject tile = Instantiate(landHex, position, Quaternion.Euler(-90, 0, 0));
         ITile tileScript = tile.GetComponentInChildren<ITile>();
          tileScript.SetUpperBounds(maxHexHeight);
+
+        Debug.Log(z + (holeNum != 0 ? mapHeight : 0));
         tileScript.AssignCoordinate(x, (z + (holeNum != 0 ? mapHeight : 0)));
 
         foreach (Transform child in tile.transform.GetComponentsInChildren<Transform>())
         {
             if (child.CompareTag("Hex"))
             {
-                Debug.Log(child);
+             //   Debug.Log(child);
                 ITile tileChildScript = child.GetComponent<ITile>();
                 tileChildScript.SetUpperBounds(maxHexHeight);
 
@@ -862,7 +916,7 @@ public class HexGrid : MonoBehaviour
 
         for (int i = pooledTiles.Count - 1; i >= 0; i--)
         {
-            ITile pooledTile = pooledTiles[i].GetComponent<ITile>();
+            ITile pooledTile = pooledTiles[i].GetComponentInChildren<ITile>();
             if (pooledTile.GetTileType() == tileType)
             {
 
@@ -920,7 +974,7 @@ public class HexGrid : MonoBehaviour
 
         List<Vector2> neighbourList = new List<Vector2>();
 
-       ITile tile = holeHex.GetComponent<ITile>();
+       ITile tile = holeHex.GetComponentInChildren<ITile>();
 
 
 

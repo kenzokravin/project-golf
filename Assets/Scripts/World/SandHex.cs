@@ -17,6 +17,8 @@ public class SandHex : MonoBehaviour, ITile
     public float upperBounds;
     Vector2 camBounds;
 
+    public bool isMoving;
+
 
     void Start()
     {
@@ -29,6 +31,7 @@ public class SandHex : MonoBehaviour, ITile
      //   Debug.Log("Cam Bounds for pool despawn: " + -(camBounds.y * .5f));
         lowerBounds = -(camBounds.y * .5f);
         //upperBounds = 16f;
+        isMoving = false;
     }
 
     // Update is called once per frame
@@ -49,6 +52,10 @@ public class SandHex : MonoBehaviour, ITile
         //For moving the hole down though, this might be difficult. As it won't have a full shift of all hexes by a set amount. This is because of different par holes.
         //Or would it? Not sure. This might not affect it because the limit is dependent on world position, not coords. World limit has to be less than the lowest coord (where y=0 for hex coord) 
 
+        if(isMoving == true)
+        {
+            return;
+        }
 
         if(gameObject.transform.parent.gameObject.transform.position.y < lowerBounds  || gameObject.transform.parent.gameObject.transform.position.y > upperBounds)
         {
@@ -70,6 +77,11 @@ public class SandHex : MonoBehaviour, ITile
         return new Vector2(camWidth, camHeight);
 
 
+    }
+
+    public void SetMoving(bool state)
+    {
+        isMoving = state;
     }
 
     public string GetTileType()
