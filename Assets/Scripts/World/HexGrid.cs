@@ -69,7 +69,7 @@ public class HexGrid : MonoBehaviour
         pooledTiles = new List<GameObject>();
         isInitializing = false;
         poolCounter = 0;
-        highestCoordPooled = -1f;
+        highestCoordPooled = 0f;
     }
 
     // Update is called once per frame
@@ -104,7 +104,13 @@ public class HexGrid : MonoBehaviour
                    
                 }
 
-                highestCoordPooled = tile.GetCoordinates().y;
+
+                if(tile.GetCoordinates().y > 0)
+                {
+
+                    highestCoordPooled = tile.GetCoordinates().y;
+                }
+             
 
 
                 activeTiles.RemoveAt(i);
