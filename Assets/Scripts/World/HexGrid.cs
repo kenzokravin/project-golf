@@ -160,6 +160,8 @@ public class HexGrid : MonoBehaviour
             
         }
 
+        Debug.Log("Reassigning");
+
     }
 
     private void TrackHexMovement()
@@ -192,7 +194,9 @@ public class HexGrid : MonoBehaviour
         for (int x = 0; x < mapWidth; x++)
         {
 
-            Vector3 hexCoords = GetNextHexCoords(x ,mapHeight) + startGenPosition;
+            //  Vector3 hexCoords = GetNextHexCoords(x ,mapHeight) + startGenPosition;
+
+            Vector3 hexCoords = GetNextHexCoords(x, mapHeight);
 
 
             CheckWaterValue(hexCoords,x,mapHeight);
@@ -775,7 +779,7 @@ public class HexGrid : MonoBehaviour
         ITile tileScript = tile.GetComponentInChildren<ITile>();
          tileScript.SetUpperBounds(maxHexHeight);
 
-        Debug.Log("yVal of spawned hex: " + z);
+       // Debug.Log("yVal of spawned hex: " + z);
         tileScript.AssignCoordinate(x, (z ));
 
 
