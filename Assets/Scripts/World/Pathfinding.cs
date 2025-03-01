@@ -48,28 +48,28 @@ public class Pathfinding : MonoBehaviour
         if (tile.GetCoordinates().y - 1 >= 0)
         {
             //Underneath
-            neighbourList.Add(hexGrid.GetHex((int)(tile.GetCoordinates().x), (int)(tile.GetCoordinates().y - 1)).GetComponent<ITile>());
+            neighbourList.Add(hexGrid.GetHex((int)(tile.GetCoordinates().x), (int)(tile.GetCoordinates().y - 1)).GetComponentInChildren<ITile>());
 
         }
 
         if (tile.GetCoordinates().y + 1 <= hexGrid.GetCourseHeight())
         {
             //Above
-            neighbourList.Add(hexGrid.GetHex((int)(tile.GetCoordinates().x), (int)(tile.GetCoordinates().y + 1)).GetComponent<ITile>());
+            neighbourList.Add(hexGrid.GetHex((int)(tile.GetCoordinates().x), (int)(tile.GetCoordinates().y + 1)).GetComponentInChildren<ITile>());
 
         }
 
         if (tile.GetCoordinates().x - 1 >= 0)
         {
             //Left
-            neighbourList.Add(hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y)).GetComponent<ITile>());
+            neighbourList.Add(hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y)).GetComponentInChildren<ITile>());
 
         }
 
         if (tile.GetCoordinates().x + 1 < hexGrid.GetCourseWidth())
         {
             //Right
-            neighbourList.Add(hexGrid.GetHex((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y)).GetComponent<ITile>());
+            neighbourList.Add(hexGrid.GetHex((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y)).GetComponentInChildren<ITile>());
 
         }
 
@@ -79,14 +79,14 @@ public class Pathfinding : MonoBehaviour
             if(tile.GetCoordinates().y + 1 < hexGrid.GetCourseHeight() && tile.GetCoordinates().x + 1 < hexGrid.GetCourseWidth())
             {
                 //Diagonal Top Right
-                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y + 1))).GetComponent<ITile>());
+                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y + 1))).GetComponentInChildren<ITile>());
 
             }
 
             if (tile.GetCoordinates().y + 1 < hexGrid.GetCourseHeight() && tile.GetCoordinates().x - 1 >= 0)
             {
                 //Diagonal Top Left
-                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y + 1))).GetComponent<ITile>());
+                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y + 1))).GetComponentInChildren<ITile>());
 
             }
         } else
@@ -95,14 +95,14 @@ public class Pathfinding : MonoBehaviour
             if (tile.GetCoordinates().y - 1 >= 0 && tile.GetCoordinates().x - 1 >= 0)
             {
                 //Diagonal Bot Left
-                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y - 1))).GetComponent<ITile>());
+                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x - 1), (int)(tile.GetCoordinates().y - 1))).GetComponentInChildren<ITile>());
 
             }
 
             if (tile.GetCoordinates().y - 1 >= 0 && tile.GetCoordinates().x + 1 < hexGrid.GetCourseWidth())
             {
                 //Diagonal bot right
-                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y - 1))).GetComponent<ITile>());
+                neighbourList.Add((hexGrid.GetHex((int)(tile.GetCoordinates().x + 1), (int)(tile.GetCoordinates().y - 1))).GetComponentInChildren<ITile>());
 
             }
 
@@ -225,8 +225,8 @@ public class Pathfinding : MonoBehaviour
 
     private int CalculateDistanceCost(ITile a, ITile b)
     {
-        Debug.Log("a: " + a.GetPosition());
-        Debug.Log("b: " + b.GetPosition());
+      //  Debug.Log("a: " + a.GetPosition());
+       // Debug.Log("b: " + b.GetPosition());
 
 
         return Mathf.RoundToInt(MOVE_STRAIGHT_COST * Vector3.Distance(a.GetPosition(), b.GetPosition()));

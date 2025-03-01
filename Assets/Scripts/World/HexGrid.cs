@@ -72,7 +72,7 @@ public class HexGrid : MonoBehaviour
         pooledTiles = new List<GameObject>();
         isInitializing = false;
         poolCounter = 0;
-        highestCoordPooled = -1f;
+        highestCoordPooled = 0f;
     }
 
     // Update is called once per frame
@@ -172,12 +172,12 @@ public class HexGrid : MonoBehaviour
        // Debug.Log("movingCont y pos: " + movingContainer.transform.position.y + ", tile spawn distance: " + (lastSpawnPosition.y - movingContainer.transform.position.y));
 
 
-        if (lastSpawnPosition.y - movingContainer.transform.position.y > tileSize)
+        if (lastSpawnPosition.y - movingContainer.transform.position.y >= tileSize)
         {
             SpawnNextRow();
             //perhaps call spawn next row here?
 
-            Debug.Log("Spawn next row");
+            Debug.Log("Spawn next row");   
             lastSpawnPosition = movingContainer.transform.position;
         }
 }
@@ -185,6 +185,9 @@ public class HexGrid : MonoBehaviour
 
     private void SpawnNextRow()
     {
+
+        //This might be able to be fixed by spawning based on the previous row position and not on the start generation position.
+        //This allows for us to consider the dynamic nature of moving the tiles (so there will not be any gaps between the rows.)
 
         for (int x = 0; x < mapWidth; x++)
         {
@@ -203,16 +206,6 @@ public class HexGrid : MonoBehaviour
 
     private void MoveHexes()
     {
-
-        //Order of Operations for lazy loading of hexes (hoping to increase performance.
-        //1. Cycle through and move each hex (using a tween or otherwise) down to new position.
-        //2. For each hex despawned, spawn a new one above and move into position.
-        //3. To despawn, add a method that checks if the tile is below the camera bounds. (this might have to be in the tile script. We can then pool the hex.)
-
-        //Maybe to reduce impact of tweens, could place all active tiles into empty, tween empty, then remove empty (or reset it to 0,0 and then add all new active tiles?)
-
-        //Another note: To ensure pooled Tiles are available, we could Instantiate 2 holes at start, storing the 2nd hole hexes as pooled. Then when they are required, activate them and send move them into position.
-
 
         movingContainer = Instantiate(movingCont,gameObject.transform);
         lastSpawnPosition = movingContainer.transform.position;
@@ -435,7 +428,7 @@ public class HexGrid : MonoBehaviour
 
         Debug.Log("Lowest Y: " + lowestY);
 
-        maxHexHeight = tileSize * mapHeight * 0.75f;
+        maxHexHeight = (-camBounds.y * .5f) + (tileSize * mapHeight) + (0.5f * tileSize);
 
 
         Vector3 startPosition = new Vector3(startX, -camBounds.y * .5f, 0);
@@ -661,17 +654,36 @@ public class HexGrid : MonoBehaviour
 
     private Vector3 GetNextHexCoords(int x, int y)
     {
-        // This is used post initialization, as it has an increased y value.
+        //This might be able to be fixed by spawning based on the previous row position and not on the start generation position.
+        //This allows for us to consider the dynamic nature of moving the tiles (so there will not be any gaps between the rows.)
+
 
         float xPos = x * tileSize * Mathf.Cos(Mathf.Deg2Rad * 30);
-        float yPos = (y+1) * tileSize + ((x % 2 == 1) ? tileSize * .5f : 0);
+        float yOffset=  tileSize + ((x % 2 == 1) ? tileSize * .5f : 0);
 
-        Vector3 position = new Vector3(xPos, yPos, 0);
+        //yOffset would just be the previous y position plus the tile size no?
 
-        return transform.InverseTransformPoint(position);
+        GameObject previousRowHex = GetHex(x, y - 1);
+
+        Debug.Log("Finding at x:" + x + ", y: " + (y-1) + ". GameObj: " + previousRowHex);
+
+        Vector3 prevPosition = previousRowHex.transform.position;
+
+        yOffset = tileSize;
+       
+
+        // New hex position based on previous row
+        Vector3 newPosition = new Vector3(xPos, prevPosition.y + yOffset, 0);
+
+        return newPosition;
 
 
-        return position;
+        // Vector3 position = new Vector3(xPos, yPos, 0);
+
+        //return transform.InverseTransformPoint(position);
+
+/*
+        return position;*/
 
     }
 
