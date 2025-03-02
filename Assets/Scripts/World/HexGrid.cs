@@ -54,13 +54,15 @@ public class HexGrid : MonoBehaviour
     public float highestCoordPooled;
     public bool isSpawning = false;
 
+    private bool isMoving;
+
     
 
 
     void Start()
     {
 
-
+        isMoving = false;
         var AllMBs = GetComponents<MonoBehaviour>();
         foreach (var mb in AllMBs)
         {
@@ -165,6 +167,8 @@ public class HexGrid : MonoBehaviour
 
         //It needs to reassign coords on the go (subtracting one for each row pooled.
 
+     
+
         for (int i = activeTiles.Count - 1; i >= 0; i--)
         {
            
@@ -175,10 +179,14 @@ public class HexGrid : MonoBehaviour
             
         }
 
+
+      
+        
         Debug.Log("Reassigning");
         SpawnNextRow();
+        
 
-    }
+}
 
     private void TrackHexMovement()
     {
@@ -253,6 +261,8 @@ public class HexGrid : MonoBehaviour
 
         //To adjust for holes, the movement would have to be adjusted (based on full tile size and number of tiles to be shifted)
 
+        isMoving = true;
+
         movingContainer.transform.DOMove(new Vector3(0, -(tileSize * mapHeight), 0), 2f)
           .SetEase(Ease.Linear)
           .OnComplete(() =>
@@ -267,6 +277,8 @@ public class HexGrid : MonoBehaviour
                 Destroy(movingContainer);
                movingContainer = null;
 
+              isMoving = false;
+              ReassignCoords();
               //Could Set HighestCoordPooled to 0 here.
 
           });
@@ -1138,7 +1150,7 @@ public class HexGrid : MonoBehaviour
 
                 GameObject pooledObj = pooledTiles[i].gameObject;
 
-                if(holeNum != 0)
+                if(holeNum != 0 && isMoving)
                 {
                     //Setting parent of moving pool to moving container.
                     pooledObj.transform.parent = movingContainer.transform;
