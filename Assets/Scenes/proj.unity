@@ -1272,6 +1272,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 4291572686106679555, guid: 4c9a6e9fbea1ed94da9568b0e2bf250d, type: 3}
     - target: {fileID: 5002343032609927957, guid: b5a12bd8bea285e43a7db8b1c5a1d2b1, type: 3}
+      propertyPath: landNoiseSeed
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5002343032609927957, guid: b5a12bd8bea285e43a7db8b1c5a1d2b1, type: 3}
       propertyPath: outTilePrefab
       value: 
       objectReference: {fileID: 7902888480807370861, guid: 942289a3f968caa479620779ae3d0ac7, type: 3}

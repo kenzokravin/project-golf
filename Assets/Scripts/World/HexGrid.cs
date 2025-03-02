@@ -128,6 +128,10 @@ public class HexGrid : MonoBehaviour
 
                 activeTiles.RemoveAt(i);
 
+             
+                hexToPool.transform.parent = gameObject.transform;
+                
+
                 hexToPool.transform.position = new Vector3(0, 0, 0);
 
                 pooledTiles.Add(hexToPool);
@@ -230,7 +234,9 @@ public class HexGrid : MonoBehaviour
 
         }
 
-        movingContainer.transform.DOMove(new Vector3(0, -(GetCameraBounds().y), 0), 2f)
+        //To adjust for holes, the movement would have to be adjusted (based on full tile size and number of tiles to be shifted)
+
+        movingContainer.transform.DOMove(new Vector3(0, -(tileSize * mapHeight), 0), 2f)
           .SetEase(Ease.Linear)
           .OnComplete(() =>
           {
@@ -1062,6 +1068,7 @@ public class HexGrid : MonoBehaviour
                 {
                     //Setting parent of moving pool to moving container.
                     pooledObj.transform.parent = movingContainer.transform;
+                  //  pooledObj.transform.position = Vector3.zero;
                 }
 
                 pooledTiles.RemoveAt(i);
