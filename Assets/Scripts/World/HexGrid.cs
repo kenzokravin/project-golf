@@ -44,8 +44,8 @@ public class HexGrid : MonoBehaviour
     [SerializeField] private float noiseSeed = 1234567;
     [SerializeField] private float landNoiseSeed = 1234567;
 
-    [SerializeField] private List<GameObject> activeTiles;
-    [SerializeField] private List<GameObject> pooledTiles;
+    [SerializeField] private List<GameObject> activeTiles = new List<GameObject>();
+    [SerializeField] private List<GameObject> pooledTiles = new List<GameObject>();
 
     [SerializeField] private GameObject movingCont;
     public Vector3 lastSpawnPosition;
@@ -67,14 +67,16 @@ public class HexGrid : MonoBehaviour
             Debug.Log("HEXGRID Found a " + mb.GetType());
         }
 
-
-        holeNum = 0;
-        InitializeMapGrid();
-        clickDetector = GetComponent<ClickDetector>();
         pooledTiles = new List<GameObject>();
+        holeNum = 0;
+       
+        clickDetector = GetComponent<ClickDetector>();
+      
         isInitializing = false;
         poolCounter = 0;
         highestCoordPooled = 0f;
+
+        InitializeMapGrid();
     }
 
     // Update is called once per frame
@@ -104,26 +106,31 @@ public class HexGrid : MonoBehaviour
 
                 float yCoord = tile.GetCoordinates().y;
 
-                Debug.Log("yCoord is: " + yCoord + ", HighestCoordPooled is: " + highestCoordPooled);
+            //    Debug.Log("yCoord is: " + yCoord + ", HighestCoordPooled is: " + highestCoordPooled);
               
 
 
-                if (yCoord > highestCoordPooled)
+                if (yCoord > 0)
                 {
                     if(holeNum != 0)
                     {
+                        //Debug.Log("logged coord pre reassign: " + yCoord);
                         //This drops the y value of the current tiles, so y=0 is always the bottom-most tile.
                         ReassignCoords();
+                       // SpawnNextRow();
+                        // Debug.Log("logged coord post reassign: " + yCoord);
+                        highestCoordPooled++;
+
                     }
                 }
 
 
-                if(yCoord> 0)
+            /*    if (yCoord > 0)
                 {
 
                     highestCoordPooled = yCoord;
-                }
-             
+                }*/
+
 
 
                 activeTiles.RemoveAt(i);
@@ -169,6 +176,7 @@ public class HexGrid : MonoBehaviour
         }
 
         Debug.Log("Reassigning");
+        SpawnNextRow();
 
     }
 
@@ -184,11 +192,15 @@ public class HexGrid : MonoBehaviour
 
         if (lastSpawnPosition.y - movingContainer.transform.position.y >= tileSize)
         {
-            SpawnNextRow();
+
+            lastSpawnPosition = movingContainer.transform.position;
+           // SpawnNextRow();
+
+
             //perhaps call spawn next row here?
 
-            Debug.Log("Spawn next row with movingContainr of: " + movingContainer.transform.position.y + ", and lastPossie of: " + lastSpawnPosition.y);   
-            lastSpawnPosition = movingContainer.transform.position;
+           // Debug.Log("Spawn next row with movingContainr of: " + movingContainer.transform.position.y + ", and lastPossie of: " + lastSpawnPosition.y);   
+           
         }
 }
 
@@ -204,11 +216,16 @@ public class HexGrid : MonoBehaviour
 
             //  Vector3 hexCoords = GetNextHexCoords(x ,mapHeight) + startGenPosition;
 
+            //It SHOULD SPAWN AT y=30 everytime.
+            int yCoordOfHex = Mathf.RoundToInt((mapHeight - highestCoordPooled) + 1);
+
             Vector3 hexCoords = GetNextHexCoords(x, mapHeight);
 
 
-            CheckWaterValue(hexCoords,x,mapHeight);
+            CheckWaterValue(hexCoords,x, mapHeight);
 
+
+            //So far the issue is position because 29 doesn't exist when it should.
 
         }
 
@@ -446,7 +463,9 @@ public class HexGrid : MonoBehaviour
 
         Debug.Log("Lowest Y: " + lowestY);
 
-        maxHexHeight = (-camBounds.y * .5f) + (tileSize * mapHeight) + (0.5f * tileSize);
+        maxHexHeight = (-camBounds.y * .5f) + (tileSize * (mapHeight)) + (0.5f * tileSize);
+
+        maxHexHeight = 100f;
 
 
         Vector3 startPosition = new Vector3(startX, -camBounds.y * .5f, 0);
@@ -524,11 +543,11 @@ public class HexGrid : MonoBehaviour
 
                     Vector3 position = new Vector3(hexCoords.x, hexCoords.y, (Mathf.Lerp(0f, 0.05f, waterValue / noiseThreshold)));
 
-                    if (CheckHexPoolWater(x, z, position,"Water",0))
-                    {
+                   // if (CheckHexPoolWater(x, z, position,"Water",0))
+                  //  {
 
-                       continue;
-                    }
+                   //    continue;
+                  //  }
 
 
                     GameObject tile = Instantiate(outTilePrefab, position, Quaternion.Euler(0,0,90));
@@ -557,11 +576,11 @@ public class HexGrid : MonoBehaviour
 
                         //May be issue with array size causing memory issues.
 
-                        if (CheckHexPoolWater(x,z,positionWater,"Water",0))
-                        {
+                       // if (CheckHexPoolWater(x,z,positionWater,"Water",0))
+                       // {
 
-                            continue;
-                        }
+                        //    continue;
+                      //  }
                         
 
 
@@ -600,6 +619,12 @@ public class HexGrid : MonoBehaviour
         if(holeNum == 0 ? true : false) BallSpawn();
 
 
+        //Pools starter hexes.
+        PoolStarterHexes();
+
+        Debug.Log(pooledTiles.Count());
+
+
         isInitializing = false;
 
        // poolCounter++;
@@ -607,6 +632,51 @@ public class HexGrid : MonoBehaviour
 
 
     }
+
+    private void PoolStarterHexes()
+    {
+        if (pooledTiles == null)
+        {
+            Debug.LogError("pooledTiles is null!");
+            return;
+        }
+
+        for (int i = activeTiles.Count - 1; i >= 0; i--)
+        {
+            GameObject tile = activeTiles[i];
+            ITile tileScript = tile.GetComponentInChildren<ITile>();
+
+            if (tileScript == null)
+            {
+                Debug.LogWarning(tile + " has no ITile component!");
+                continue;
+            }
+
+            Vector3 coordinates = tileScript.GetCoordinates();
+            Debug.Log($"Tile: {tile}, Coordinates: {coordinates}");
+
+            if (coordinates.y > 30)
+            {
+                if (pooledTiles.Contains(tile))
+                {
+                    Debug.LogWarning(tile + " is already in pooledTiles!");
+                    continue;
+                }
+
+                tile.SetActive(false); // Deactivate first
+                tile.transform.parent = gameObject.transform;
+                tile.transform.position = Vector3.zero;
+
+                pooledTiles.Add(tile);
+                activeTiles.RemoveAt(i);
+
+                Debug.Log(pooledTiles.Count);
+
+                Debug.Log(tile + " was successfully pooled.");
+            }
+        }
+    }
+
 
     private void InitHole(Vector3 startPosition, int x,int y, float height)
     {
@@ -683,19 +753,23 @@ public class HexGrid : MonoBehaviour
 
         GameObject previousRowHex = GetHex(x, y - 1);
 
-        Debug.Log("Finding at x:" + x + ", y: " + (y-1) + ". GameObj: " + previousRowHex);
+        Debug.Log("previousRowHex: " + previousRowHex);
+
+
+        Debug.Log("Spawning at newY: " + y + ", using previous y: " + (y - 1));
 
         Vector3 prevPosition = previousRowHex.transform.position;
 
         yOffset = tileSize;
 
-
         Vector3 newPosition;
 
-        if (previousRowHex == null)
+        if (previousRowHex.transform.position == null)
         {
 
-            newPosition = new Vector3(xPos,0,0);
+            newPosition = new Vector3(xPos,tileSize,0);
+
+            Debug.Log("spawned with null");
 
         } else
         {
