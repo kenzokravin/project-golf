@@ -1011,7 +1011,7 @@ public class HexGrid : MonoBehaviour
             } 
         }
        
-        Debug.Log($" hex at ({x}, {y})" + ",For obj " + retHex);
+     
         return retHex;
 
 
@@ -1053,7 +1053,7 @@ public class HexGrid : MonoBehaviour
              
                 pooledTiles[i].transform.position = position;
 
-                Debug.Log("Pooled yVal: " + z);
+              //  Debug.Log("Pooled yVal: " + z);
                 pooledTile.AssignCoordinate(x, (z));
 
                 GameObject pooledObj = pooledTiles[i].gameObject;

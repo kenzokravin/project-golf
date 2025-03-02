@@ -1174,6 +1174,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: WaterHex
       objectReference: {fileID: 0}
+    - target: {fileID: 7902888480807370861, guid: 942289a3f968caa479620779ae3d0ac7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
