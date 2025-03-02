@@ -81,10 +81,9 @@ public class HexGrid : MonoBehaviour
         InitializeMapGrid();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        TrackHexMovement();
+      //  TrackHexMovement();
         
 
     }
@@ -108,38 +107,22 @@ public class HexGrid : MonoBehaviour
 
                 float yCoord = tile.GetCoordinates().y;
 
-            //    Debug.Log("yCoord is: " + yCoord + ", HighestCoordPooled is: " + highestCoordPooled);
-              
-
-
                 if (yCoord > 0)
                 {
                     if(holeNum != 0)
                     {
-                        //Debug.Log("logged coord pre reassign: " + yCoord);
                         //This drops the y value of the current tiles, so y=0 is always the bottom-most tile.
+                        //It also calls to spawn the next row.
                         ReassignCoords();
-                       // SpawnNextRow();
-                        // Debug.Log("logged coord post reassign: " + yCoord);
+
                         highestCoordPooled++;
 
                     }
                 }
 
-
-            /*    if (yCoord > 0)
-                {
-
-                    highestCoordPooled = yCoord;
-                }*/
-
-
-
                 activeTiles.RemoveAt(i);
-
-             
-                hexToPool.transform.parent = gameObject.transform;
-                
+         
+                hexToPool.transform.parent = gameObject.transform;             
 
                 hexToPool.transform.position = new Vector3(0, 0, 0);
 
@@ -163,11 +146,7 @@ public class HexGrid : MonoBehaviour
     private void ReassignCoords()
     {
         //This function will be used to reassign the y coords of the moving hex values. (should be done before they are moved?)
-        //
-
-        //It needs to reassign coords on the go (subtracting one for each row pooled.
-
-     
+       
 
         for (int i = activeTiles.Count - 1; i >= 0; i--)
         {
@@ -176,7 +155,6 @@ public class HexGrid : MonoBehaviour
                 ITile activeTile = activeTiles[i].GetComponentInChildren<ITile>();
                 activeTile.AssignCoordinate(activeTile.GetCoordinates().x, activeTile.GetCoordinates().y - 1);
 
-            
         }
 
 
@@ -190,25 +168,15 @@ public class HexGrid : MonoBehaviour
 
     private void TrackHexMovement()
     {
-        //Ok, to spawn object, make sure that position is tracked so that once, the container has moved down one tile, it can begin to spawn the next row
-        //(or just spawn one singular row if we want to lazy load row by row.)
+        //This doesn't do anything except check when the moving container has moved 1 hex down, could be useful in future.
+
 
         if (movingContainer == null) return;
-
-       // Debug.Log("movingCont y pos: " + movingContainer.transform.position.y + ", tile spawn distance: " + (lastSpawnPosition.y - movingContainer.transform.position.y));
-
 
         if (lastSpawnPosition.y - movingContainer.transform.position.y >= tileSize)
         {
 
             lastSpawnPosition = movingContainer.transform.position;
-           // SpawnNextRow();
-
-
-            //perhaps call spawn next row here?
-
-           // Debug.Log("Spawn next row with movingContainr of: " + movingContainer.transform.position.y + ", and lastPossie of: " + lastSpawnPosition.y);   
-           
         }
 }
 
@@ -222,18 +190,12 @@ public class HexGrid : MonoBehaviour
         for (int x = 0; x < mapWidth; x++)
         {
 
-            //  Vector3 hexCoords = GetNextHexCoords(x ,mapHeight) + startGenPosition;
-
-            //It SHOULD SPAWN AT y=30 everytime.
-            int yCoordOfHex = Mathf.RoundToInt((mapHeight - highestCoordPooled) + 1);
+            //Should spawn at map height everytime.
 
             Vector3 hexCoords = GetNextHexCoords(x, mapHeight);
 
 
             CheckWaterValue(hexCoords,x, mapHeight);
-
-
-            //So far the issue is position because 29 doesn't exist when it should.
 
         }
 
@@ -243,11 +205,12 @@ public class HexGrid : MonoBehaviour
 
     private void MoveHexes()
     {
+        //This moves the hexes down, signalled when hole is completed.
+
         highestCoordPooled = 0;
 
         movingContainer = Instantiate(movingCont,gameObject.transform);
         lastSpawnPosition = movingContainer.transform.position;
-        Debug.Log("lastSpawn: " + lastSpawnPosition);
 
 
         for (int i = activeTiles.Count -1; i >= 0; i--)
@@ -279,30 +242,8 @@ public class HexGrid : MonoBehaviour
 
               isMoving = false;
               ReassignCoords();
-              //Could Set HighestCoordPooled to 0 here.
 
           });
-
-
-
-    }
-
-    public void SpawnNextHex(ITile despawnedTile)
-    {
-
-        //This method will be called in each tile script when they are despawned.
-
-        //Generating the hexCoords using an adjusted y position (given the coords of the despawned tile).
-
-        Debug.Log("generating from y: " + ((int)despawnedTile.GetCoordinates().y + (holeNum != 0 ? mapHeight : 0)) );
-
-        Vector3 hexCoords = GetNextHexCoords((int)despawnedTile.GetCoordinates().x, ((int)despawnedTile.GetCoordinates().y + (holeNum != 0 ? mapHeight : 0))) + startGenPosition;
-
-
-        //This will spawn the next Hex
-        CheckWaterValue(hexCoords, (int)despawnedTile.GetCoordinates().x, (int)despawnedTile.GetCoordinates().y);
-       
-
     }
 
     private void CheckWaterValue(Vector3 hexCoords, int xCoord, int yCoord)
@@ -395,8 +336,6 @@ public class HexGrid : MonoBehaviour
 
 
     }
-
-
 
 
 
