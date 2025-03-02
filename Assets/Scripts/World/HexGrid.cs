@@ -54,6 +54,8 @@ public class HexGrid : MonoBehaviour
     public float highestCoordPooled;
     public bool isSpawning = false;
 
+    
+
 
     void Start()
     {
@@ -88,30 +90,38 @@ public class HexGrid : MonoBehaviour
 
         //This will be called in tile script when they reach the bounds of the camera.
 
+        if (!activeTiles.Contains(hexToPool))
+        {
+            Debug.LogWarning($" Hex {hexToPool.name} not found in activeTiles.");
+            return;
+        }
+
+
         for (int i = activeTiles.Count - 1; i >= 0; i--)
         {
             if (activeTiles[i] == hexToPool)
             {
 
+                float yCoord = tile.GetCoordinates().y;
+
+                Debug.Log("yCoord is: " + yCoord + ", HighestCoordPooled is: " + highestCoordPooled);
               
 
-                if (tile.GetCoordinates().y > highestCoordPooled)
+
+                if (yCoord > highestCoordPooled)
                 {
                     if(holeNum != 0)
                     {
                         //This drops the y value of the current tiles, so y=0 is always the bottom-most tile.
                         ReassignCoords();
                     }
-                  
-
-                   
                 }
 
 
-                if(tile.GetCoordinates().y > 0)
+                if(yCoord> 0)
                 {
 
-                    highestCoordPooled = tile.GetCoordinates().y;
+                    highestCoordPooled = yCoord;
                 }
              
 
@@ -127,11 +137,6 @@ public class HexGrid : MonoBehaviour
             }
         }
 
-        //Could call spawn next hex here?
-        //This would mean for each despawned hex, a new hex is spawned.
-
-        //find out why y coord is set to -28 at start (should be 0 no?
-
         if (holeNum != 0)
         {
            // ReassignCoords();
@@ -141,8 +146,7 @@ public class HexGrid : MonoBehaviour
 
     }
 
-
-
+ 
     private void ReassignCoords()
     {
         //This function will be used to reassign the y coords of the moving hex values. (should be done before they are moved?)
@@ -179,7 +183,7 @@ public class HexGrid : MonoBehaviour
             SpawnNextRow();
             //perhaps call spawn next row here?
 
-            Debug.Log("Spawn next row");   
+            Debug.Log("Spawn next row with movingContainr of: " + movingContainer.transform.position.y + ", and lastPossie of: " + lastSpawnPosition.y);   
             lastSpawnPosition = movingContainer.transform.position;
         }
 }
@@ -210,6 +214,7 @@ public class HexGrid : MonoBehaviour
 
     private void MoveHexes()
     {
+        highestCoordPooled = 0;
 
         movingContainer = Instantiate(movingCont,gameObject.transform);
         lastSpawnPosition = movingContainer.transform.position;
@@ -238,6 +243,9 @@ public class HexGrid : MonoBehaviour
                 // Destroy the container
                 Destroy(movingContainer);
                movingContainer = null;
+
+              //Could Set HighestCoordPooled to 0 here.
+
           });
 
 
@@ -674,10 +682,23 @@ public class HexGrid : MonoBehaviour
         Vector3 prevPosition = previousRowHex.transform.position;
 
         yOffset = tileSize;
+
+
+        Vector3 newPosition;
+
+        if (previousRowHex == null)
+        {
+
+            newPosition = new Vector3(xPos,0,0);
+
+        } else
+        {
+            newPosition = new Vector3(prevPosition.x, prevPosition.y + yOffset, 0);
+        }
        
 
         // New hex position based on previous row
-        Vector3 newPosition = new Vector3(xPos, prevPosition.y + yOffset, 0);
+      // Vector3 newPosition = new Vector3(prevPosition.x, prevPosition.y + yOffset, 0);
 
         return newPosition;
 
@@ -989,7 +1010,8 @@ public class HexGrid : MonoBehaviour
 
             } 
         }
-
+       
+        Debug.Log($" hex at ({x}, {y})" + ",For obj " + retHex);
         return retHex;
 
 
@@ -1035,6 +1057,12 @@ public class HexGrid : MonoBehaviour
                 pooledTile.AssignCoordinate(x, (z));
 
                 GameObject pooledObj = pooledTiles[i].gameObject;
+
+                if(holeNum != 0)
+                {
+                    //Setting parent of moving pool to moving container.
+                    pooledObj.transform.parent = movingContainer.transform;
+                }
 
                 pooledTiles.RemoveAt(i);
 
