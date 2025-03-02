@@ -19,12 +19,6 @@ public class ClickDetector : MonoBehaviour
     private void Start()
     {
 
-        var AllMBs = GetComponents<MonoBehaviour>();
-        foreach (var mb in AllMBs)
-        {
-            Debug.Log("Found a " + mb.GetType());
-        }
-
         hexGrid = GetComponent<HexGrid>();
         pathfinder = GetComponent<Pathfinding>();
 

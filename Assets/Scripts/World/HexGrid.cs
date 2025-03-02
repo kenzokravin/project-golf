@@ -665,14 +665,11 @@ public class HexGrid : MonoBehaviour
 
     private (int,int) GenerateHoleCoords(int tileNumberHorizontal)
     {
-
-        int x = Random.Range(5, tileNumberHorizontal - 5);
-        int z = Random.Range(22, 27);
-
-       // Vector2 holeCoords = new Vector2(x, z + (mapHeight * (holeNum > 0 ? 1 : 0)));
-
+        //Generates random hole coords per hole.
+        int x = Random.Range(3, tileNumberHorizontal - 3);
+        int y = Random.Range(22, 27);
         
-        return (x, z + (holeNum != 0 ? mapHeight : 0));
+        return (x, y);
 
     }
 
@@ -957,11 +954,9 @@ public class HexGrid : MonoBehaviour
         holeNum++;
 
         //Making next hole level.
-        //Maybe not use hole number to scale y? If it goes to hole two, it will use the double multiply
+        //It is here where we increase hole level, play success animations, calculate next hole coords and generate the next hole.
 
-
-
-     //   MakeMapGrid();
+        var nextHole = GenerateHoleCoords(mapWidth);
 
 
         if (holeNum > 0)
@@ -973,56 +968,6 @@ public class HexGrid : MonoBehaviour
         }
 
     }
-
-
-    private void ShiftHexPositions()
-    {
-
-
-        //Get first hex y position. Compare it to the newly regenerated hex position.
-        // Move all positions down by that value (or to that position, using y value of current hole + holeheight).
-        //Then we assign the new coordinate values to the new set of tiles (by subtracting the added holeheight from y, whilst keeping x).
-        
-
-        float courseHeightMove = mapHeight * tileSize;
-
-
-        for (int i = activeTiles.Count - 1; i >=0;i--)
-        {
-
-            ITile activeTile = activeTiles[i].GetComponent<ITile>();
-
-
-            activeTile.AssignCoordinate((int)activeTile.GetCoordinates().x, (int)activeTile.GetCoordinates().y - mapHeight);
-
-
-            activeTiles[i].transform.position = activeTiles[i].transform.position + new Vector3(0, -courseHeightMove, 0);
-
-
-
-         //   poolCounter++;
-
-            if (activeTiles[i].GetComponent<ITile>().GetCoordinates().y < 0)
-            {
-
-
-              //  Debug.Log("Object Pooled with Coords: (" + activeTile.GetCoordinates().x + "," + activeTile.GetCoordinates().y + ").");
-
-                GameObject tileToPool = activeTiles[i];
-                activeTiles.RemoveAt(i);
-
-                pooledTiles.Add(tileToPool);
-                tileToPool.SetActive(false);
-               
-               
-            }
-
-        }
-
-
-
-    }
-
 
     public GameObject GetHex(int x, int y)
     {
@@ -1044,7 +989,6 @@ public class HexGrid : MonoBehaviour
        
      
         return retHex;
-
 
     }
 
