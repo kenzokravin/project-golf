@@ -227,8 +227,8 @@ public class HexGrid : MonoBehaviour
 
         isMoving = true;
 
-        movingContainer.transform.DOMove(new Vector3(0, -(tileSize * mapHeight), 0), 2f)
-          .SetEase(Ease.Linear)
+        movingContainer.transform.DOMove(new Vector3(0, -(tileSize * parOffset), 0), 2f)
+          .SetEase(Ease.InOutCubic)
           .OnComplete(() =>
           {
                 // Unparent objects
@@ -262,7 +262,7 @@ public class HexGrid : MonoBehaviour
 
 
         //Generating hole.
-        if (nextHole.x == xCoord && nextHole.y == (highestCoordPooled + parOffset))
+        if (nextHole.x == xCoord && (nextHole.y) == (highestCoordPooled + 6))
         {
             Debug.Log("next hole genning!");
 
@@ -271,6 +271,18 @@ public class HexGrid : MonoBehaviour
                 Debug.Log("Hole Pool Reached");
                 return;
             }
+
+            GameObject holeTile = Instantiate(holePrefab, hexCoords, Quaternion.Euler(0, 0, 90));
+            ITile tileScript = holeTile.GetComponentInChildren<ITile>();
+            tileScript.AssignCoordinate(xCoord, (yCoord));
+            if (holeNum != 0 && isMoving)
+            {
+                //Setting parent of moving pool to moving container.
+                holeTile.transform.parent = movingContainer.transform;
+                //  pooledObj.transform.position = Vector3.zero;
+            }
+
+            return;
 
         }
 
@@ -683,7 +695,7 @@ public class HexGrid : MonoBehaviour
     {
         //Generates random hole coords per hole.
         int x = Random.Range(3, tileNumberHorizontal - 3);
-        int y = Random.Range(22, 27);
+        int y = Random.Range(22, 26);
         
         return (x, y);
 
@@ -951,6 +963,16 @@ public class HexGrid : MonoBehaviour
 
         //Making next hole level.
         //It is here where we increase hole level, play success animations, calculate next hole coords and generate the next hole.
+
+        //Setting parOffset for each hole. This decides how far it moves. To randomize, we need to
+
+        int holeStartRow = Random.Range(5, 7);
+
+        //here we could get the row of the next tee off, then find the position of the current hole tile and then the yCoord and then multiply by tile size.
+        ITile currentBallTile = holeTile.GetComponentInChildren<ITile>();
+        parOffset = (int)currentBallTile.GetCoordinates().y - holeStartRow;
+
+
 
         var holeGen = GenerateHoleCoords(mapWidth);
         nextHole = new Vector2(holeGen.Item1, holeGen.Item2);
