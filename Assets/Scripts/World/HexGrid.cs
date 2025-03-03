@@ -57,6 +57,7 @@ public class HexGrid : MonoBehaviour
     private bool isMoving;
     public Vector2 nextHole;
     public int parOffset;
+    public int holeSpawnRow;
     
 
 
@@ -262,7 +263,7 @@ public class HexGrid : MonoBehaviour
 
 
         //Generating hole.
-        if (nextHole.x == xCoord && (nextHole.y) == (highestCoordPooled + 6))
+        if (nextHole.x == xCoord && holeSpawnRow == (highestCoordPooled))
         {
             Debug.Log("next hole genning!");
 
@@ -695,7 +696,7 @@ public class HexGrid : MonoBehaviour
     {
         //Generates random hole coords per hole.
         int x = Random.Range(3, tileNumberHorizontal - 3);
-        int y = Random.Range(22, 26);
+        int y = Random.Range(21, 25);
         
         return (x, y);
 
@@ -970,12 +971,17 @@ public class HexGrid : MonoBehaviour
 
         //here we could get the row of the next tee off, then find the position of the current hole tile and then the yCoord and then multiply by tile size.
         ITile currentBallTile = holeTile.GetComponentInChildren<ITile>();
+
         parOffset = (int)currentBallTile.GetCoordinates().y - holeStartRow;
 
+        holeSpawnRow = mapHeight - holeStartRow;
 
 
         var holeGen = GenerateHoleCoords(mapWidth);
         nextHole = new Vector2(holeGen.Item1, holeGen.Item2);
+
+        holeSpawnRow = (int)currentBallTile.GetCoordinates().y-(holeStartRow + ((mapHeight+1) - holeGen.Item2));
+
 
 
         if (holeNum > 0)
