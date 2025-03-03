@@ -55,20 +55,16 @@ public class HexGrid : MonoBehaviour
     public bool isSpawning = false;
 
     private bool isMoving;
-
+    public Vector2 nextHole;
+    public int parOffset;
     
 
 
     void Start()
     {
-
+        parOffset = 0;
+        nextHole = new Vector2(0, 0);
         isMoving = false;
-        var AllMBs = GetComponents<MonoBehaviour>();
-        foreach (var mb in AllMBs)
-        {
-            Debug.Log("HEXGRID Found a " + mb.GetType());
-        }
-
         pooledTiles = new List<GameObject>();
         holeNum = 0;
        
@@ -194,6 +190,11 @@ public class HexGrid : MonoBehaviour
 
             Vector3 hexCoords = GetNextHexCoords(x, mapHeight);
 
+            if(nextHole.x == x && nextHole.y == highestCoordPooled)
+            {
+
+            }
+
 
             CheckWaterValue(hexCoords,x, mapHeight);
 
@@ -256,6 +257,20 @@ public class HexGrid : MonoBehaviour
         if (noiseSeed == -1)
         {
             noiseSeed = Random.Range(0, 10000);
+
+        }
+
+
+        //Generating hole.
+        if (nextHole.x == xCoord && nextHole.y == (highestCoordPooled + parOffset))
+        {
+            Debug.Log("next hole genning!");
+
+            if (CheckHexPoolWater(xCoord, mapHeight, hexCoords, "Hole", 0f))
+            {
+                Debug.Log("Hole Pool Reached");
+                return;
+            }
 
         }
 
@@ -336,8 +351,6 @@ public class HexGrid : MonoBehaviour
 
 
     }
-
-
 
     void InitializeMapGrid()
     {
@@ -436,7 +449,14 @@ public class HexGrid : MonoBehaviour
 
         for (int z = 0; z < mapHeight * 2; z++)
         {
+            if(z == mapHeight)
+            {
+                //If one hole has been genned, gen next hole coords.
+                var nextHoleResult = GenerateHoleCoords(tileHorizontalNum);
+                 holeCoords = new Vector2(nextHoleResult.Item1, (nextHoleResult.Item2 + mapHeight));
+                Debug.Log("2nd Hole Coords: " + holeCoords);
 
+            }
 
             for (int x = 0; x < mapWidth; x++) 
             {
@@ -478,7 +498,7 @@ public class HexGrid : MonoBehaviour
                           continue;
                     }
 
-                    InitHole(startPosition, result.Item1,result.Item2, waterValue);
+                    InitHole(startPosition, (int)holeCoords.x, (int)holeCoords.y, waterValue);
 
 
                  //   Debug.Log("Matched: " + new Vector2(x, (z + (holeNum != 0 ? mapHeight : 0))));
@@ -629,7 +649,7 @@ public class HexGrid : MonoBehaviour
     }
 
 
-    private void InitHole(Vector3 startPosition, int x,int y, float height)
+    private void InitHole(Vector3 startPosition, int x, int y, float height)
     {
 
 
@@ -642,20 +662,16 @@ public class HexGrid : MonoBehaviour
 
         Vector3 hexCoords = GetHexCoords(x, y) + startPosition;
 
-    //    Debug.Log("Hole GENNN");
+        //    Debug.Log("Hole GENNN");
 
-        GameObject hole = Instantiate(holePrefab, new Vector3(hexCoords.x,hexCoords.y,-tileHeight), Quaternion.Euler(-90, 0, 0));
-        holeTile = hole;
+        GameObject hole = Instantiate(holePrefab, new Vector3(hexCoords.x, hexCoords.y, -tileHeight), Quaternion.Euler(-90, 0, 0));
+
+        if (holeTile == null) { 
+              holeTile = hole;
+        }
        ITile tileScript = hole.GetComponentInChildren<ITile>();
         tileScript.SetUpperBounds(maxHexHeight);
         tileScript.AssignCoordinate(x, y);
-
-
-        Debug.Log("Hole GENNN: " + hole);
-
-        //   ITile tileChildScript = hole.GetComponentInChildren<ITile>();
-        //  tileChildScript.SetUpperBounds(maxHexHeight);
-
 
         activeTiles.Add(hole);
 
@@ -695,20 +711,12 @@ public class HexGrid : MonoBehaviour
 
 
         float xPos = x * tileSize * Mathf.Cos(Mathf.Deg2Rad * 30);
-        float yOffset=  tileSize + ((x % 2 == 1) ? tileSize * .5f : 0);
-
-        //yOffset would just be the previous y position plus the tile size no?
 
         GameObject previousRowHex = GetHex(x, y - 1);
 
-        Debug.Log("previousRowHex: " + previousRowHex);
-
-
-        Debug.Log("Spawning at newY: " + y + ", using previous y: " + (y - 1));
-
         Vector3 prevPosition = previousRowHex.transform.position;
 
-        yOffset = tileSize;
+        float yOffset = tileSize;
 
         Vector3 newPosition;
 
@@ -717,26 +725,14 @@ public class HexGrid : MonoBehaviour
 
             newPosition = new Vector3(xPos,tileSize,0);
 
-            Debug.Log("spawned with null");
 
         } else
         {
             newPosition = new Vector3(prevPosition.x, prevPosition.y + yOffset, 0);
         }
        
-
-        // New hex position based on previous row
-      // Vector3 newPosition = new Vector3(prevPosition.x, prevPosition.y + yOffset, 0);
-
         return newPosition;
 
-
-        // Vector3 position = new Vector3(xPos, yPos, 0);
-
-        //return transform.InverseTransformPoint(position);
-
-/*
-        return position;*/
 
     }
 
@@ -956,7 +952,8 @@ public class HexGrid : MonoBehaviour
         //Making next hole level.
         //It is here where we increase hole level, play success animations, calculate next hole coords and generate the next hole.
 
-        var nextHole = GenerateHoleCoords(mapWidth);
+        var holeGen = GenerateHoleCoords(mapWidth);
+        nextHole = new Vector2(holeGen.Item1, holeGen.Item2);
 
 
         if (holeNum > 0)
@@ -1018,6 +1015,9 @@ public class HexGrid : MonoBehaviour
 
                 if(tileType == "Hole")
                 {
+
+                    Debug.Log("Found Hole in Pool!");
+
                     pooledTile.OnClick();
                     holeTile = pooledTiles[i];
 
