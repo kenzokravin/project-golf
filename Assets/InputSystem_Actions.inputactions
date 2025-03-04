@@ -1001,7 +1001,7 @@
                     "id": "1fb8b826-2392-4613-818c-3df2226592c1",
                     "expectedControlType": "",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "Hold",
                     "initialStateCheck": true
                 },
                 {
@@ -1009,6 +1009,15 @@
                     "type": "Button",
                     "id": "d4d062f2-45ef-4af5-b0b5-dfa884606e7f",
                     "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "TouchPosition",
+                    "type": "PassThrough",
+                    "id": "47d669b2-c39c-4c0c-a7d6-d59980c2598f",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -1021,7 +1030,7 @@
                     "path": "<Touchscreen>/primaryTouch/phase",
                     "interactions": "Hold",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Touch;Keyboard&Mouse",
                     "action": "TouchAim",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1032,8 +1041,19 @@
                     "path": "<Touchscreen>/Press",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard&Mouse;Touch",
                     "action": "TouchPress",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "d0f28477-1d44-47b9-a7f1-a4bf09d179dd",
+                    "path": "<Touchscreen>/primaryTouch/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Touch;Keyboard&Mouse",
+                    "action": "TouchPosition",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

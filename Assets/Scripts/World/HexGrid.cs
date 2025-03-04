@@ -58,6 +58,8 @@ public class HexGrid : MonoBehaviour
     public Vector2 nextHole;
     public int parOffset;
     public int holeSpawnRow;
+
+    [SerializeField] GameObject[] celebrationSprites = new GameObject[6];
     
 
 
@@ -228,7 +230,7 @@ public class HexGrid : MonoBehaviour
 
         isMoving = true;
 
-        movingContainer.transform.DOMove(new Vector3(0, -(tileSize * parOffset), 0), 2f)
+        movingContainer.transform.DOMove(new Vector3(0, -(tileSize * parOffset), 0), 1.5f)
           .SetEase(Ease.InOutCubic)
           .OnComplete(() =>
           {
@@ -265,11 +267,11 @@ public class HexGrid : MonoBehaviour
         //Generating hole.
         if (nextHole.x == xCoord && holeSpawnRow == (highestCoordPooled))
         {
-            Debug.Log("next hole genning!");
+           // Debug.Log("next hole genning!");
 
             if (CheckHexPoolWater(xCoord, mapHeight, hexCoords, "Hole", 0f))
             {
-                Debug.Log("Hole Pool Reached");
+              //  Debug.Log("Hole Pool Reached");
                 return;
             }
 
@@ -438,8 +440,6 @@ public class HexGrid : MonoBehaviour
         // Calculate the lowest point that the camera can see at (x = 0, z = 0)
         float lowestY = cameraPosition.y + verticalVisibility;
 
-        Debug.Log("Lowest Y: " + lowestY);
-
         maxHexHeight = (-camBounds.y * .5f) + (tileSize * (mapHeight)) + (0.5f * tileSize);
 
         maxHexHeight = 100f;
@@ -606,8 +606,6 @@ public class HexGrid : MonoBehaviour
         //Pools starter hexes.
         PoolStarterHexes();
 
-        Debug.Log(pooledTiles.Count());
-
 
         isInitializing = false;
 
@@ -637,8 +635,7 @@ public class HexGrid : MonoBehaviour
             }
 
             Vector3 coordinates = tileScript.GetCoordinates();
-            Debug.Log($"Tile: {tile}, Coordinates: {coordinates}");
-
+  
             if (coordinates.y > 30)
             {
                 if (pooledTiles.Contains(tile))
@@ -654,9 +651,7 @@ public class HexGrid : MonoBehaviour
                 pooledTiles.Add(tile);
                 activeTiles.RemoveAt(i);
 
-                Debug.Log(pooledTiles.Count);
-
-                Debug.Log(tile + " was successfully pooled.");
+               // Debug.Log(tile + " was successfully pooled.");
             }
         }
     }
@@ -942,11 +937,15 @@ public class HexGrid : MonoBehaviour
 
 
         currentBallTile = chosenHex;
+
+        Flip(currentBallTile);
+
         ballController.SetHexGrid(currentBallTile);
 
         //If hex is the holeTile. Start End Hole Cycle.
         if (currentBallTile == holeTile)
         {
+
             HoleCycle();
 
         }
@@ -960,12 +959,13 @@ public class HexGrid : MonoBehaviour
 
     private void HoleCycle()
     {
+        //Plays celebrationAnimation.
+        Celebrate(RetreiveCurrentBallTile());
+
         holeNum++;
 
         //Making next hole level.
         //It is here where we increase hole level, play success animations, calculate next hole coords and generate the next hole.
-
-        //Setting parOffset for each hole. This decides how far it moves. To randomize, we need to
 
         int holeStartRow = Random.Range(5, 7);
 
@@ -1222,7 +1222,65 @@ public class HexGrid : MonoBehaviour
         return activeTiles;
     }
 
+    private void Flip(GameObject tile)
+    {
+        //Could add flip animation here, tanks frames currently though (not sure why).
 
+
+      //  tile.transform.DOPunchRotation(new Vector3 (0,35,0),.8f,9);
+       // tile.transform.DOPunchPosition(new Vector3 (0,0,-.2f),0.8f,9);
+
+        //tile.transform.D
+
+    }
+
+
+    
+    private void Celebrate(GameObject tile)
+    {
+        // Celebration animation for completing hole. May have to add object pooling for sprites.
+
+        Debug.Log("Celebrate! " + celebrationSprites.Count());
+
+        int numOfSparkles = Random.Range(3, 6);
+
+        for(int i = 1; i <= numOfSparkles; i++)
+        {
+            int sparkle = Random.Range(0, 5);
+
+            GameObject sparkleSprite = Instantiate(celebrationSprites[sparkle]);
+
+           // sparkleSprite.transform.parent = tile.transform;
+
+            sparkleSprite.transform.position = tile.transform.position + new Vector3 (0,-.5f,-1f);
+
+            float randTranslateX = Random.Range(0f, .4f);
+
+            if (i % 2 == 1)
+            {
+                randTranslateX = -randTranslateX;
+            }
+            
+
+            Vector3 targetPosition = sparkleSprite.transform.position + new Vector3( randTranslateX,0.8f,0); 
+
+            sparkleSprite.transform.DOMove(targetPosition,.4f)
+                .SetEase(Ease.OutCubic)
+                .OnComplete(() => {
+
+                    Destroy(sparkleSprite);
+            
+            
+              });
+
+
+
+
+        }
+
+
+
+    }
 
 
 }
