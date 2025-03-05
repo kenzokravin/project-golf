@@ -23,31 +23,11 @@ public class ClickDetector : MonoBehaviour
     public InputAction touchDragAction;
     private Camera _mainCamera;
 
-    private InputSystem_Actions _actions;
-
     private void Awake()
     {
-        _actions = new InputSystem_Actions();
-
-        playerInput = GetComponent<PlayerInput>();
-
-        if (playerInput == null)
-        {
-            Debug.LogError("PlayerInput component is missing!");
-            return;
-        }
-
-        touchDragAction = playerInput.actions.FindAction("TouchAim");
-        touchPressAction = playerInput.actions.FindAction("TouchPress");
-
-        if (touchDragAction == null)
-        {
-            Debug.LogError("TouchAim action not found in Input Actions!");
-        }
-        if (touchPressAction == null)
-        {
-            Debug.LogError("TouchPress action not found in Input Actions!");
-        }
+       
+  
+    
     }
 
 
@@ -60,20 +40,11 @@ public class ClickDetector : MonoBehaviour
         pathfinder = GetComponent<Pathfinding>();
 
 
-        //   ball = hexGrid.RetreiveBallObj().GetComponent<BallController>();
-      //  _actions.Touch.TouchPress.started += ctx => TouchPress(ctx);
-       // _actions.Touch.TouchPress.canceled += ctx => EndPress(ctx);
-
-       
-
-
     }
 
 
     void Update()
     {
-
-
 
         if (Input.GetMouseButtonDown(0)) // Left-click
         {
@@ -148,18 +119,32 @@ public class ClickDetector : MonoBehaviour
         }
     }
 
-    private void OnEnable()
+    private void AimShot()
     {
-        _actions.Enable();
+
+
+
+
+
+    }
+
+
+
+
+    private void OnEnable()
+    { 
         InputController.OnTouchPositionUpdated += HandleTouchPosition;
+        InputController.OnTouchPressDownPosition += OnPressDownPosition;
+        InputController.OnTouchPressUpPosition += OnPressUpPosition;
 
     }
 
     private void OnDisable()
     {
-
-        _actions.Disable();
+  
         InputController.OnTouchPositionUpdated -= HandleTouchPosition;
+        InputController.OnTouchPressDownPosition -= OnPressDownPosition;
+        InputController.OnTouchPressUpPosition -= OnPressUpPosition;
 
     }
 
@@ -168,6 +153,19 @@ public class ClickDetector : MonoBehaviour
         Debug.Log("Received Touch Position in TouchListener: " + position);
         // Use the position here
     }
+
+    private void OnPressDownPosition(Vector3 position)
+    {
+        Debug.Log("Received Touch Down: " + position);
+        // Use the position here
+    }
+
+    private void OnPressUpPosition(Vector3 position)
+    {
+        Debug.Log("Received Touch Up: " + position);
+        // Use the position here
+    }
+
 
 
     private void CalculateHit(GameObject tileWithBall, GameObject targetTile)

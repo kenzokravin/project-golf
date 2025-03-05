@@ -7,6 +7,7 @@ public class InputController : MonoBehaviour
 {
 
     private bool _isDragging;
+    private bool firstPress;
     public InputAction touchPressAction;
     public InputAction touchDragAction;
     private Camera _mainCamera;
@@ -14,18 +15,20 @@ public class InputController : MonoBehaviour
     private InputSystem_Actions _actions;
 
     public static event Action<Vector3> OnTouchPositionUpdated;
+    public static event Action<Vector3> OnTouchPressDownPosition;
+    public static event Action<Vector3> OnTouchPressUpPosition;
 
     private void Awake()
     {
         _actions = new InputSystem_Actions();
-
+        
     }
 
 
     private void Start()
     {
         _mainCamera = Camera.main;
-
+        firstPress = false;
         _actions.Touch.TouchPress.started += ctx => TouchPress(ctx);
         _actions.Touch.TouchPress.canceled += ctx => EndPress(ctx);
 
@@ -66,11 +69,14 @@ public class InputController : MonoBehaviour
         if (context.started)
         {
             _isDragging = true;
-      
+           
             //  _offset = transform.position - ScreenToWorld(touchPos);
             Debug.Log("Dragging!");
+           // OnTouchPressDownPosition?.Invoke(worldPos);
             _actions.Touch.TouchPosition.performed += ctx => TouchPosition(ctx);
 
+
+   
 
         }
         else if (context.canceled)
@@ -84,6 +90,13 @@ public class InputController : MonoBehaviour
     {
         Debug.Log("EndPress.");
         _actions.Touch.TouchPosition.performed -= ctx => TouchPosition(ctx);
+
+
+        Vector2 touchPos = _actions.Touch.TouchPosition.ReadValue<Vector2>();
+        Vector3 worldPos = ScreenToWorld(touchPos);
+        OnTouchPressUpPosition?.Invoke(worldPos);
+
+        firstPress = false;
     }
 
 
@@ -94,10 +107,24 @@ public class InputController : MonoBehaviour
         {
             Vector2 touchPos = context.ReadValue<Vector2>();
             Vector3 worldPos = ScreenToWorld(touchPos);
+
+            if (!firstPress)
+            {
+
+                OnTouchPressDownPosition?.Invoke(worldPos);
+                firstPress = true;
+            }
+            else
+            {
+
+                OnTouchPositionUpdated?.Invoke(worldPos);
+            }
+
+            
             Debug.Log("TouchPosition: " + worldPos);
 
             //Invokes the event which communicates that the world position of the drag is active.
-            OnTouchPositionUpdated?.Invoke(worldPos);
+           
 
         }
     }
@@ -105,9 +132,6 @@ public class InputController : MonoBehaviour
 
     private Vector3 ScreenToWorld(Vector2 screenPos)
     {
-        // Vector3 worldPos = _mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, _mainCamera.nearClipPlane + 5));
-        // return new Vector3(worldPos.x, worldPos.y, transform.position.z);
-
 
         Ray ray = _mainCamera.ScreenPointToRay(screenPos);
 
