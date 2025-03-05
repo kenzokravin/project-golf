@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using System;
 
 public class InputController : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class InputController : MonoBehaviour
     private Camera _mainCamera;
 
     private InputSystem_Actions _actions;
+
+    public static event Action<Vector3> OnTouchPositionUpdated;
 
     private void Awake()
     {
@@ -63,7 +66,7 @@ public class InputController : MonoBehaviour
         if (context.started)
         {
             _isDragging = true;
-            Vector2 touchPos = GetTouchPosition();
+      
             //  _offset = transform.position - ScreenToWorld(touchPos);
             Debug.Log("Dragging!");
             _actions.Touch.TouchPosition.performed += ctx => TouchPosition(ctx);
@@ -92,6 +95,10 @@ public class InputController : MonoBehaviour
             Vector2 touchPos = context.ReadValue<Vector2>();
             Vector3 worldPos = ScreenToWorld(touchPos);
             Debug.Log("TouchPosition: " + worldPos);
+
+            //Invokes the event which communicates that the world position of the drag is active.
+            OnTouchPositionUpdated?.Invoke(worldPos);
+
         }
     }
 
@@ -118,13 +125,4 @@ public class InputController : MonoBehaviour
 
 
     }
-
-    private Vector2 GetTouchPosition()
-    {
-        return Touchscreen.current.primaryTouch.position.ReadValue();
-    }
-
-
-
-
 }
