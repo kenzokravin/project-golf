@@ -36,6 +36,11 @@ public class ClickDetector : MonoBehaviour
     public InputAction touchDragAction;
     private Camera _mainCamera;
 
+
+    public LineRenderer lineRenderer;
+    public int resolution = 20; // Number of points for smoothness
+    public float arcHeight = 2f; // How high the arc should go
+
     private void Awake()
     {
        
@@ -52,7 +57,8 @@ public class ClickDetector : MonoBehaviour
         hexGrid = GetComponent<HexGrid>();
         pathfinder = GetComponent<Pathfinding>();
         hexShift = false;
-
+        lineRenderer.startWidth = 0.1f;
+        lineRenderer.endWidth = 0.05f;
     }
 
 
@@ -120,9 +126,6 @@ public class ClickDetector : MonoBehaviour
 
                     Debug.Log(pathfinder);
 
-                 //   Debug.Log("ballTile is: " + hexGrid.RetreiveCurrentBallTile() + " at: "  + Mathf.RoundToInt(ballTile.GetCoordinates().x) + "," + Mathf.RoundToInt(ballTile.GetCoordinates().y) + ". Selected is: " + 
-                   //     clickedTile +" at: " + Mathf.RoundToInt(selectedTile.GetCoordinates().x) + ", " + Mathf.RoundToInt(selectedTile.GetCoordinates().y));
-
                     List<ITile> path = pathfinder.FindPath(Mathf.RoundToInt(ballTile.GetCoordinates().x), Mathf.RoundToInt(ballTile.GetCoordinates().y), Mathf.RoundToInt(selectedTile.GetCoordinates().x), Mathf.RoundToInt(selectedTile.GetCoordinates().y));
 
                     Debug.Log("Length is: " + pathfinder.GetPathLength(path));
@@ -140,9 +143,6 @@ public class ClickDetector : MonoBehaviour
 
     private void AimShot()
     {
-       // bool hexShift = false;
-
-        
 
             if(hexShift)
             {
@@ -157,6 +157,7 @@ public class ClickDetector : MonoBehaviour
 
             }
 
+        //Inverting the  crosshair for pullback aiming.
         Vector3 invertedCrossHair = startTouchPosition + (startTouchPosition - crosshairAiming);
 
         
@@ -181,18 +182,13 @@ public class ClickDetector : MonoBehaviour
                     continue; // Skip this iteration if the tile doesn't exist
                 }
 
+            //Translating the tile position to the clicked target, so user can click anywhere and pull back and it maps directly.
             Vector3 relativeTilePosition = targetPosition + (currentTile.transform.position - previousTile.transform.position);
             Debug.Log("Relative Position: " + relativeTilePosition);
 
 
             Debug.DrawLine(previousTile.transform.position, currentTile.transform.position, Color.green, 0.2f); // Previous Tile -> Current Tile
             Debug.DrawLine(startTouchPosition, relativeTilePosition, Color.yellow, 0.2f); // Start Position -> Relative Tile Position
-
-            // **DEBUG: Draw spheres at key points**
-            Debug.DrawRay(previousTile.transform.position, Vector3.up * 0.2f, Color.cyan); // Marker for previous tile
-            Debug.DrawRay(currentTile.transform.position, Vector3.up * 0.2f, Color.magenta); // Marker for current tile
-            Debug.DrawRay(relativeTilePosition, Vector3.up * 0.2f, Color.white); // Marker for relative position
-            Debug.DrawRay(invertedCrossHair, Vector3.up * 0.2f, Color.red);
 
 
             if (Vector3.Distance(relativeTilePosition, invertedCrossHair) < distanceFromStart)
@@ -202,7 +198,8 @@ public class ClickDetector : MonoBehaviour
                     targetTile = currentTile;
                     previousTile = currentTile;
                     targetPosition = relativeTilePosition;
-                    
+
+                    DrawTrajectory(startingTile.transform.position, targetTile.transform.position);
                     
                     hexShift = true;
                 }
@@ -266,7 +263,7 @@ public class ClickDetector : MonoBehaviour
         targetTile = null;
         targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
         _isDragging = true;
-        //AimShot();
+  
 
     }
 
@@ -274,6 +271,8 @@ public class ClickDetector : MonoBehaviour
     {
         Debug.Log("Received Touch Up: " + position);
         // Use the position here
+
+        //Where we would confirm the shot.
 
         _isDragging = false;
     }
@@ -309,5 +308,21 @@ public class ClickDetector : MonoBehaviour
 
     }
 
+
+    public void DrawTrajectory(Vector3 startPos, Vector3 endPos)
+    {
+        List<Vector3> trajectoryPoints = new List<Vector3>();
+
+        for (int i = 0; i <= resolution; i++)
+        {
+            float t = i / (float)resolution; // Normalized time (0 to 1)
+            Vector3 point = Vector3.Lerp(startPos, endPos, t); // Linear interpolation
+            point.z += Mathf.Sin(t * Mathf.PI) * -arcHeight; // Add height to create an arc
+            trajectoryPoints.Add(point);
+        }
+
+        lineRenderer.positionCount = trajectoryPoints.Count;
+        lineRenderer.SetPositions(trajectoryPoints.ToArray());
+    }
 
 }
