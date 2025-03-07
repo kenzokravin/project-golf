@@ -24,7 +24,7 @@ public class ClickDetector : MonoBehaviour
     public GameObject previousTile;
     public GameObject targetTile;
     public Vector3 crosshairAiming;
-    private List<Vector2> targetNeighbours;
+    public List<Vector2> targetNeighbours;
     public Vector3 startTouchPosition;
     public Vector3 targetPosition;
 
@@ -181,7 +181,7 @@ public class ClickDetector : MonoBehaviour
                     continue; // Skip this iteration if the tile doesn't exist
                 }
 
-            Vector3 relativeTilePosition = startTouchPosition + (currentTile.transform.position - previousTile.transform.position);
+            Vector3 relativeTilePosition = targetPosition + (currentTile.transform.position - previousTile.transform.position);
             Debug.Log("Relative Position: " + relativeTilePosition);
 
 
@@ -258,6 +258,7 @@ public class ClickDetector : MonoBehaviour
         //This would allow for UI to determine whether it has been struck.
 
         //Setting startingTile as the current Ball Tile.
+        crosshairAiming = position;
         startTouchPosition = position;
         targetPosition = position;
         startingTile = hexGrid.RetreiveCurrentBallTile();
