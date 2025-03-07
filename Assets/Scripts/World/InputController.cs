@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System;
 
@@ -56,16 +57,11 @@ public class InputController : MonoBehaviour
 
     }
 
-    private void Drag(InputAction.CallbackContext context)
-    {
-
-        Debug.Log("Dragging");
-
-
-    }
-
     public void TouchPress(InputAction.CallbackContext context)
     {
+
+
+
         if (context.started)
         {
             _isDragging = true;

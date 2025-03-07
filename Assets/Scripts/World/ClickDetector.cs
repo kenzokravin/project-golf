@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class ClickDetector : MonoBehaviour
 {
     private bool _isDragging;
+    private bool hexShift;
     private Vector3 _offset;
     [SerializeField] private GameObject clickedTile;
     [SerializeField] private bool selected = false;
@@ -18,6 +19,16 @@ public class ClickDetector : MonoBehaviour
     private Touch touch;
     private Vector3 dragStartPos;
     public PlayerInput playerInput;
+
+    public GameObject startingTile;
+    public GameObject previousTile;
+    public GameObject targetTile;
+    public Vector3 crosshairAiming;
+    private List<Vector2> targetNeighbours;
+
+    private bool active;
+
+
 
     public InputAction touchPressAction;
     public InputAction touchDragAction;
@@ -38,7 +49,7 @@ public class ClickDetector : MonoBehaviour
         _mainCamera = Camera.main;
         hexGrid = GetComponent<HexGrid>();
         pathfinder = GetComponent<Pathfinding>();
-
+        hexShift = false;
 
     }
 
@@ -119,12 +130,60 @@ public class ClickDetector : MonoBehaviour
         }
     }
 
+    //Get start position as current tile ball is on.
+    //Get neighbours of it. Check crosshair position distance is closer or further away to neighbour hexes.
+    //if closer, switch active hex, get neighbours and compare distances again.
+
+
+
     private void AimShot()
     {
+       // bool hexShift = false;
+
+        
+
+            if(hexShift)
+            {
+                if (hexGrid.GetNeighbourListCoordinates(previousTile) == null)
+                {
+                    Debug.LogError("previousTile is null! Aborting AimShot.");
+                    return;
+                }
+
+                targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
+                hexShift = false;
+
+            }
+
+
+
+            float distanceFromStart = Vector3.Distance(previousTile.transform.position, crosshairAiming);
+
+            //Converting vectors to gameObjs, then checking whether the distance between the crosshair and the tile is smaller than the distance from the cross hair and previous tile.
+            for (int i = 0; i < targetNeighbours.Count; i++)
+            {
+
+                GameObject currentTile = hexGrid.GetHex((int)targetNeighbours[i].x, (int)targetNeighbours[i].y);
+
+                if (currentTile == null)
+                {
+                    Debug.LogWarning($"Hex at {targetNeighbours[i].x}, {targetNeighbours[i].y} is null. Skipping.");
+                    continue; // Skip this iteration if the tile doesn't exist
+                }
+            if (Vector3.Distance(currentTile.transform.position, crosshairAiming) < distanceFromStart)
+                {
+
+                    targetTile = currentTile;
+                    previousTile = currentTile;
+                    hexShift = true;
+                }
+
+            }
 
 
 
 
+        
 
     }
 
@@ -152,18 +211,38 @@ public class ClickDetector : MonoBehaviour
     {
         Debug.Log("Received Touch Position in TouchListener: " + position);
         // Use the position here
+
+
+        //Still have to set inverse drag aim mechanic.
+        crosshairAiming = position;
+
+        AimShot();
+
+
     }
 
     private void OnPressDownPosition(Vector3 position)
     {
         Debug.Log("Received Touch Down: " + position);
-        // Use the position here
+
+        //Might have to check whether the gamestate is playing or not (or that the press is in the valid play area)
+        //This would allow for UI to determine whether it has been struck.
+
+        //Setting startingTile as the current Ball Tile.
+        startingTile = hexGrid.RetreiveCurrentBallTile();
+        previousTile = startingTile;
+        targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
+        _isDragging = true;
+        //AimShot();
+
     }
 
     private void OnPressUpPosition(Vector3 position)
     {
         Debug.Log("Received Touch Up: " + position);
         // Use the position here
+
+        _isDragging = false;
     }
 
 
