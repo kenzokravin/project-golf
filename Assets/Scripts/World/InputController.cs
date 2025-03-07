@@ -117,7 +117,7 @@ public class InputController : MonoBehaviour
             }
 
             
-            Debug.Log("TouchPosition: " + worldPos);
+          //  Debug.Log("TouchPosition: " + worldPos);
 
             //Invokes the event which communicates that the world position of the drag is active.
            

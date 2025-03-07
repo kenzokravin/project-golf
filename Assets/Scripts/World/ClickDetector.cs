@@ -25,6 +25,8 @@ public class ClickDetector : MonoBehaviour
     public GameObject targetTile;
     public Vector3 crosshairAiming;
     private List<Vector2> targetNeighbours;
+    public Vector3 startTouchPosition;
+    public Vector3 targetPosition;
 
     private bool active;
 
@@ -155,12 +157,20 @@ public class ClickDetector : MonoBehaviour
 
             }
 
+        Vector3 invertedCrossHair = startTouchPosition + (startTouchPosition - crosshairAiming);
+
+        
+
+        float distanceFromStart = Vector3.Distance(targetPosition, invertedCrossHair);
+
+        Debug.Log("Previous Position: " + previousTile.transform.position + ", edited cross hair position: " + invertedCrossHair + ", crosshair possie: "+ crosshairAiming);
 
 
-            float distanceFromStart = Vector3.Distance(previousTile.transform.position, crosshairAiming);
+        Debug.DrawLine(previousTile.transform.position, startTouchPosition, Color.blue, 0.2f); // Previous Tile -> Start Position
+        Debug.DrawLine(startTouchPosition, invertedCrossHair, Color.red, 0.2f); //perfect.
 
-            //Converting vectors to gameObjs, then checking whether the distance between the crosshair and the tile is smaller than the distance from the cross hair and previous tile.
-            for (int i = 0; i < targetNeighbours.Count; i++)
+        //Converting vectors to gameObjs, then checking whether the distance between the crosshair and the tile is smaller than the distance from the cross hair and previous tile.
+        for (int i = 0; i < targetNeighbours.Count; i++)
             {
 
                 GameObject currentTile = hexGrid.GetHex((int)targetNeighbours[i].x, (int)targetNeighbours[i].y);
@@ -170,11 +180,30 @@ public class ClickDetector : MonoBehaviour
                     Debug.LogWarning($"Hex at {targetNeighbours[i].x}, {targetNeighbours[i].y} is null. Skipping.");
                     continue; // Skip this iteration if the tile doesn't exist
                 }
-            if (Vector3.Distance(currentTile.transform.position, crosshairAiming) < distanceFromStart)
+
+            Vector3 relativeTilePosition = startTouchPosition + (currentTile.transform.position - previousTile.transform.position);
+            Debug.Log("Relative Position: " + relativeTilePosition);
+
+
+            Debug.DrawLine(previousTile.transform.position, currentTile.transform.position, Color.green, 0.2f); // Previous Tile -> Current Tile
+            Debug.DrawLine(startTouchPosition, relativeTilePosition, Color.yellow, 0.2f); // Start Position -> Relative Tile Position
+
+            // **DEBUG: Draw spheres at key points**
+            Debug.DrawRay(previousTile.transform.position, Vector3.up * 0.2f, Color.cyan); // Marker for previous tile
+            Debug.DrawRay(currentTile.transform.position, Vector3.up * 0.2f, Color.magenta); // Marker for current tile
+            Debug.DrawRay(relativeTilePosition, Vector3.up * 0.2f, Color.white); // Marker for relative position
+            Debug.DrawRay(invertedCrossHair, Vector3.up * 0.2f, Color.red);
+
+
+            if (Vector3.Distance(relativeTilePosition, invertedCrossHair) < distanceFromStart)
                 {
 
+               // Debug.Log("Relative Position: " + relativeTilePosition);
                     targetTile = currentTile;
                     previousTile = currentTile;
+                    targetPosition = relativeTilePosition;
+                    
+                    
                     hexShift = true;
                 }
 
@@ -209,7 +238,7 @@ public class ClickDetector : MonoBehaviour
 
     private void HandleTouchPosition(Vector3 position)
     {
-        Debug.Log("Received Touch Position in TouchListener: " + position);
+       // Debug.Log("Received Touch Position in TouchListener: " + position);
         // Use the position here
 
 
@@ -229,8 +258,11 @@ public class ClickDetector : MonoBehaviour
         //This would allow for UI to determine whether it has been struck.
 
         //Setting startingTile as the current Ball Tile.
+        startTouchPosition = position;
+        targetPosition = position;
         startingTile = hexGrid.RetreiveCurrentBallTile();
         previousTile = startingTile;
+        targetTile = null;
         targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
         _isDragging = true;
         //AimShot();
