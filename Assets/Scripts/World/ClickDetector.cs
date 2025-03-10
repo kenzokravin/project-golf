@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
-
+using TMPro;
 public class ClickDetector : MonoBehaviour
 {
     private bool _isDragging;
@@ -13,7 +13,7 @@ public class ClickDetector : MonoBehaviour
 
     [SerializeField] private int maxHitLength = 7;
 
-    private Pathfinding pathfinder;
+    public Pathfinding pathfinder;
     private HexGrid hexGrid;
 
     private Touch touch;
@@ -29,7 +29,7 @@ public class ClickDetector : MonoBehaviour
     public Vector3 targetPosition;
 
     private bool active;
-
+    private ITile ballTileScript;
 
 
     public InputAction touchPressAction;
@@ -40,6 +40,19 @@ public class ClickDetector : MonoBehaviour
     public LineRenderer lineRenderer;
     public int resolution = 20; // Number of points for smoothness
     public float arcHeight = 2f; // How high the arc should go
+
+    public float hitTime = 1f; //How long the player has to hit the ball.
+    public float hitTolerance = .5f; //How lenient the hit is.
+    public float minPower = 0.3f;         // Minimum shot power (if mistimed)
+    public float maxPower = 1.0f;
+
+    public float holdTime = 0f;
+    public float shotDistance = 0;
+
+    public int shotCount = 0;
+    public TMP_Text currentShots;
+
+    public GameUIManager gameUIManager;
 
     private void Awake()
     {
@@ -53,17 +66,27 @@ public class ClickDetector : MonoBehaviour
 
     private void Start()
     {
+        gameUIManager = GameObject.FindGameObjectWithTag("InputController").GetComponent<GameUIManager>();
         _mainCamera = Camera.main;
         hexGrid = GetComponent<HexGrid>();
         pathfinder = GetComponent<Pathfinding>();
         hexShift = false;
         lineRenderer.startWidth = 0.1f;
         lineRenderer.endWidth = 0.05f;
+
+       
+
     }
 
 
     void Update()
     {
+
+        if(_isDragging)
+        {
+            AimShot();
+            holdTime += Time.deltaTime;
+        }
 
         if (Input.GetMouseButtonDown(0)) // Left-click
         {
@@ -141,6 +164,7 @@ public class ClickDetector : MonoBehaviour
 
 
 
+    //To make shot faster, could set it so it works off position if there is certain speed?
     private void AimShot()
     {
 
@@ -151,8 +175,8 @@ public class ClickDetector : MonoBehaviour
                     Debug.LogError("previousTile is null! Aborting AimShot.");
                     return;
                 }
-
-                targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
+            DrawTrajectory(startingTile.transform.position, targetTile.transform.position);
+            targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
                 hexShift = false;
 
             }
@@ -164,11 +188,10 @@ public class ClickDetector : MonoBehaviour
 
         float distanceFromStart = Vector3.Distance(targetPosition, invertedCrossHair);
 
-        Debug.Log("Previous Position: " + previousTile.transform.position + ", edited cross hair position: " + invertedCrossHair + ", crosshair possie: "+ crosshairAiming);
+        Vector3 relativeTilePosition = Vector3.zero;
 
-
-        Debug.DrawLine(previousTile.transform.position, startTouchPosition, Color.blue, 0.2f); // Previous Tile -> Start Position
-        Debug.DrawLine(startTouchPosition, invertedCrossHair, Color.red, 0.2f); //perfect.
+       // Debug.DrawLine(previousTile.transform.position, startTouchPosition, Color.blue, 0.2f); // Previous Tile -> Start Position
+       // Debug.DrawLine(startTouchPosition, invertedCrossHair, Color.red, 0.2f); //perfect.
 
         //Converting vectors to gameObjs, then checking whether the distance between the crosshair and the tile is smaller than the distance from the cross hair and previous tile.
         for (int i = 0; i < targetNeighbours.Count; i++)
@@ -183,12 +206,11 @@ public class ClickDetector : MonoBehaviour
                 }
 
             //Translating the tile position to the clicked target, so user can click anywhere and pull back and it maps directly.
-            Vector3 relativeTilePosition = targetPosition + (currentTile.transform.position - previousTile.transform.position);
-            Debug.Log("Relative Position: " + relativeTilePosition);
+            relativeTilePosition = targetPosition + (currentTile.transform.position - previousTile.transform.position);
 
 
-            Debug.DrawLine(previousTile.transform.position, currentTile.transform.position, Color.green, 0.2f); // Previous Tile -> Current Tile
-            Debug.DrawLine(startTouchPosition, relativeTilePosition, Color.yellow, 0.2f); // Start Position -> Relative Tile Position
+        //    Debug.DrawLine(previousTile.transform.position, currentTile.transform.position, Color.green, 0.2f); // Previous Tile -> Current Tile
+          //  Debug.DrawLine(startTouchPosition, relativeTilePosition, Color.yellow, 0.2f); // Start Position -> Relative Tile Position
 
 
             if (Vector3.Distance(relativeTilePosition, invertedCrossHair) < distanceFromStart)
@@ -199,9 +221,18 @@ public class ClickDetector : MonoBehaviour
                     previousTile = currentTile;
                     targetPosition = relativeTilePosition;
 
-                    DrawTrajectory(startingTile.transform.position, targetTile.transform.position);
                     
-                    hexShift = true;
+
+                ITile currentTileScript = currentTile.GetComponentInChildren<ITile>();
+
+
+               // List<ITile> path = pathfinder.FindPath(Mathf.RoundToInt(ballTileScript.GetCoordinates().x), Mathf.RoundToInt(ballTileScript.GetCoordinates().y), Mathf.RoundToInt(currentTileScript.GetCoordinates().x), Mathf.RoundToInt(currentTileScript.GetCoordinates().y));
+
+
+             //   shotDistance = pathfinder.GetPathLength(path);
+
+
+                hexShift = true;
                 }
 
             }
@@ -242,7 +273,7 @@ public class ClickDetector : MonoBehaviour
         //Still have to set inverse drag aim mechanic.
         crosshairAiming = position;
 
-        AimShot();
+     //   AimShot();
 
 
     }
@@ -255,10 +286,17 @@ public class ClickDetector : MonoBehaviour
         //This would allow for UI to determine whether it has been struck.
 
         //Setting startingTile as the current Ball Tile.
+
+     
+        shotDistance = 0f;
+        holdTime = 0f;
         crosshairAiming = position;
         startTouchPosition = position;
         targetPosition = position;
         startingTile = hexGrid.RetreiveCurrentBallTile();
+
+        ballTileScript = startingTile.GetComponentInChildren<ITile>();
+
         previousTile = startingTile;
         targetTile = null;
         targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
@@ -274,7 +312,12 @@ public class ClickDetector : MonoBehaviour
 
         //Where we would confirm the shot.
 
+        ReleaseShot();
+
         _isDragging = false;
+
+
+
     }
 
 
@@ -308,6 +351,54 @@ public class ClickDetector : MonoBehaviour
 
     }
 
+    private void Hit()
+    {
+
+
+        //Calculate hit works, just need to ensure the hole tile remains active.
+        // CalculateHit(hexGrid.RetreiveCurrentBallTile(), clickedTile);
+    
+
+
+        ball.Jump(hexGrid.RetreiveCurrentBallTile(),targetTile);
+
+        hexGrid.SwapActiveHex(targetTile);
+
+        gameUIManager.addToCurrentShots(1);
+
+        selected = false;
+
+
+
+
+    }
+
+    private void ReleaseShot()
+    {
+
+       
+
+
+        float distanceQuality = CalculatePower(holdTime);
+        Hit();
+
+
+
+    }
+
+    private float CalculatePower(float holdDuration)
+    {
+        float difference = Mathf.Abs(holdDuration - hitTime);
+
+        if (difference <= hitTolerance)
+        {
+            return maxPower; // Perfect shot
+        }
+        else
+        {
+            return Mathf.Lerp(maxPower, minPower, difference / (hitTime + hitTolerance));
+        }
+    }
 
     public void DrawTrajectory(Vector3 startPos, Vector3 endPos)
     {
@@ -324,5 +415,8 @@ public class ClickDetector : MonoBehaviour
         lineRenderer.positionCount = trajectoryPoints.Count;
         lineRenderer.SetPositions(trajectoryPoints.ToArray());
     }
+
+
+
 
 }
