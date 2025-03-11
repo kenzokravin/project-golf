@@ -175,7 +175,7 @@ public class ClickDetector : MonoBehaviour
                     Debug.LogError("previousTile is null! Aborting AimShot.");
                     return;
                 }
-            DrawTrajectory(startingTile.transform.position, targetTile.transform.position);
+           // DrawTrajectory(startingTile.transform.position, targetTile.transform.position);
             targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
                 hexShift = false;
 

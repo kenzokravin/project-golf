@@ -104,4 +104,12 @@ public class GameUIManager : MonoBehaviour
 
     }
 
+    public int GetCurrentShots()
+    {
+
+        return currentShotCount;
+
+    }
+
+
 }

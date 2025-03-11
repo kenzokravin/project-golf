@@ -17,6 +17,8 @@ Shader"My Custom Shaders/Toon Shader"
         _RimSharpness("Rim Sharpness", Float) = 16.0
         [HDR] _RimColor("Rim Color", Color) = (1.0, 1.0, 1.0)
         [HDR] _WorldColor("World Color", Color) = (0.1, 0.1, 0.1)
+            [HDR] _ShadowColor("Shadow Color", Color) = (0, 0, 0, 1)
+        _ShadowOpacity("Shadow Opacity", Range(0, 1)) = 1.0
     }
 
 

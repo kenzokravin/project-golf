@@ -19,6 +19,7 @@ public class HexGrid : MonoBehaviour
     public GameObject greenPrefab;
     public GameObject holePrefab;
     public GameObject ballPrefab;
+    [SerializeField] private GameObject cloud;
 
     [SerializeField] GameObject currentBallTile;
     [SerializeField] GameObject ball;
@@ -46,6 +47,7 @@ public class HexGrid : MonoBehaviour
 
     [SerializeField] private List<GameObject> activeTiles = new List<GameObject>();
     [SerializeField] private List<GameObject> pooledTiles = new List<GameObject>();
+    [SerializeField] private List<GameObject> cloudPool = new List<GameObject>();
 
     [SerializeField] private GameObject movingCont;
     public Vector3 lastSpawnPosition;
@@ -82,7 +84,6 @@ public class HexGrid : MonoBehaviour
 
     void Update()
     {
-      //  TrackHexMovement();
         
 
     }
@@ -132,13 +133,6 @@ public class HexGrid : MonoBehaviour
             }
         }
 
-        if (holeNum != 0)
-        {
-           // ReassignCoords();
-          //  SpawnNextHex(tile);
-            
-        }
-
     }
 
  
@@ -163,20 +157,6 @@ public class HexGrid : MonoBehaviour
         SpawnNextRow();
         
 
-}
-
-    private void TrackHexMovement()
-    {
-        //This doesn't do anything except check when the moving container has moved 1 hex down, could be useful in future.
-
-
-        if (movingContainer == null) return;
-
-        if (lastSpawnPosition.y - movingContainer.transform.position.y >= tileSize)
-        {
-
-            lastSpawnPosition = movingContainer.transform.position;
-        }
 }
 
 
@@ -372,7 +352,7 @@ public class HexGrid : MonoBehaviour
 
         if(holeNum != 0)
         {
-       //     return;
+           return;
         }
 
         isInitializing = true;
@@ -485,17 +465,11 @@ public class HexGrid : MonoBehaviour
 
                }
 
-                //Right now there is no way to have a seeded map, to do this, we would have to translate/offset the perlin noise each time it is regen. Thus maintaining the same seed.
-
-
                 float waterValue = Mathf.PerlinNoise(((hexCoords.x) * noiseSeed) / noiseFrequency, ((hexCoords.y + noiseOffset) * noiseSeed) / noiseFrequency);
 
 
 
                 //This is checking if coords are the same as the hole gen coords.
-
-             
-
                 if (Mathf.Approximately(holeCoords.x, x) && Mathf.Approximately(holeCoords.y, (z + (holeNum != 0 ? mapHeight : 0))))
                 {
 
@@ -505,13 +479,13 @@ public class HexGrid : MonoBehaviour
 
                     //-------------------------------
                     //Need to add hole type script to hole.
-                    if (CheckHexPoolWater(x, z, hexCoords, "Hole",waterValue))
+                    if (CheckHexPoolWater(x, z, hexCoords, "Hole",0))
                     {
                         Debug.Log("Hole Pool Reached");
                           continue;
                     }
 
-                    InitHole(startPosition, (int)holeCoords.x, (int)holeCoords.y, waterValue);
+                    InitHole(startPosition, (int)holeCoords.x, (int)holeCoords.y, 0);
 
 
                  //   Debug.Log("Matched: " + new Vector2(x, (z + (holeNum != 0 ? mapHeight : 0))));
@@ -650,8 +624,6 @@ public class HexGrid : MonoBehaviour
 
                 pooledTiles.Add(tile);
                 activeTiles.RemoveAt(i);
-
-               // Debug.Log(tile + " was successfully pooled.");
             }
         }
     }
@@ -960,7 +932,7 @@ public class HexGrid : MonoBehaviour
     private void HoleCycle()
     {
         //Plays celebrationAnimation.
-        Celebrate(RetreiveCurrentBallTile());
+      //  Celebrate(RetreiveCurrentBallTile());
 
         holeNum++;
 
@@ -1281,6 +1253,18 @@ public class HexGrid : MonoBehaviour
 
 
     }
+
+
+    private void GenerateClouds()
+    {
+
+
+
+
+
+    }
+
+
 
 
 }

@@ -30,6 +30,8 @@ float _Smoothness;
 float _RimSharpness;
 float3 _RimColor;
 float3 _WorldColor;
+float3 _ShadowColor;
+float _ShadowOpacity;
 CBUFFER_END
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -207,7 +209,7 @@ float FragmentDepthOnly(Varyings IN) : SV_Target
     UNITY_SETUP_INSTANCE_ID(IN);
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 
-    return 0;
+    return float4(_ShadowColor.rgb, _ShadowOpacity); // Apply color & opacity
 }
 
 /*
@@ -248,6 +250,9 @@ float3 Fragment(Varyings IN) : SV_Target
 
     float toonLighting = easysmoothstep(0, NoL);
     float toonShadows = easysmoothstep(0.5, light.shadowAttenuation);
+    float3 shadowTint = lerp(_ShadowColor, float3(1, 1, 1), toonShadows); // Blend shadow color
+
+    float3 finalShadow = lerp(float3(1, 1, 1), _ShadowOpacity, 1.0 - toonShadows);
 
     float3 halfVector = normalize(light.direction + IN.viewDirectionWS);
     float NoH = max(dot(IN.normalWS, halfVector), 0);
@@ -262,11 +267,11 @@ float3 Fragment(Varyings IN) : SV_Target
 
     float3 surfaceColor = _Color * SAMPLE_TEXTURE2D(_ColorMap, sampler_ColorMap, IN.uv);
 
-    float3 directionalLighting = toonLighting * toonShadows * light.color;
+    float3 directionalLighting = toonLighting * finalShadow * light.color;
     float3 specularLighting = specularTerm * light.color;
     float3 rimLighting = rimTerm * _RimColor;
 
-    float3 finalLighting = float3(0,0,0);
+    float3 finalLighting = float3(0, 0, 0);
     finalLighting += _WorldColor;
     finalLighting += directionalLighting;
     finalLighting += specularLighting;

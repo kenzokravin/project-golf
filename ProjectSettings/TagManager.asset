@@ -9,6 +9,7 @@ TagManager:
   - CameraWorldBuilder
   - MovingContainer
   - InputController
+  - GameUI
   layers:
   - Default
   - TransparentFX

@@ -64,6 +64,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: cfe9e87cdaf886240a3c18eb55aa6f37, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e482fd82c12454e44a4d0a3a9bca8649, type: 2}
     - target: {fileID: 919132149155446097, guid: cfe9e87cdaf886240a3c18eb55aa6f37, type: 3}
       propertyPath: m_Name
       value: golfBall
@@ -105,7 +109,8 @@ MonoBehaviour:
   maxHeight: 1.5
   t: 0
   isMoving: 0
-  jumpTime: 0.4
+  ballTile: {fileID: 0}
+  pathfinder: {fileID: 0}
 --- !u!114 &8511015100957215387
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -65,6 +65,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -7601226680800833775, guid: 24813068dcf994c40b1028e757224434, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -7601226680800833775, guid: 24813068dcf994c40b1028e757224434, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: bee6ca72012293f4fa864d052cc610fd, type: 2}
@@ -77,6 +81,18 @@ PrefabInstance:
       value: treeTile1_v2
       objectReference: {fileID: 0}
     - target: {fileID: 1541998606474349963, guid: 24813068dcf994c40b1028e757224434, type: 3}
+      propertyPath: m_CastShadows
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1541998606474349963, guid: 24813068dcf994c40b1028e757224434, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: bee6ca72012293f4fa864d052cc610fd, type: 2}
+    - target: {fileID: 3695666860197271449, guid: 24813068dcf994c40b1028e757224434, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3695666860197271449, guid: 24813068dcf994c40b1028e757224434, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: bee6ca72012293f4fa864d052cc610fd, type: 2}
@@ -147,6 +163,7 @@ MonoBehaviour:
   cam: {fileID: 0}
   lowerBounds: 0
   upperBounds: 0
+  isMoving: 0
 --- !u!64 &4647989691230317918
 MeshCollider:
   m_ObjectHideFlags: 0
