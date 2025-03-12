@@ -111,5 +111,14 @@ public class GameUIManager : MonoBehaviour
 
     }
 
+    public void CompleteHole()
+    {
+
+        addToTotalPoints(currentShotCount);
+        
+        currentShotCount = 0;
+
+    }
+
 
 }

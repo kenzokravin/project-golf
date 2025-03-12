@@ -62,11 +62,15 @@ public class HexGrid : MonoBehaviour
     public int holeSpawnRow;
 
     [SerializeField] GameObject[] celebrationSprites = new GameObject[6];
+    [SerializeField] private GameUIManager gameUIManager;
+
     
 
 
     void Start()
     {
+        gameUIManager = GameObject.FindGameObjectWithTag("InputController").GetComponent<GameUIManager>();
+
         parOffset = 0;
         nextHole = new Vector2(0, 0);
         isMoving = false;
@@ -694,6 +698,14 @@ public class HexGrid : MonoBehaviour
 
         GameObject previousRowHex = GetHex(x, y - 1);
 
+        if(previousRowHex == null)
+        {
+
+            Debug.Log(GetHex(x, y) + " with coords of: " + x + ", " + y);
+
+        }
+
+
         Vector3 prevPosition = previousRowHex.transform.position;
 
         float yOffset = tileSize;
@@ -934,6 +946,8 @@ public class HexGrid : MonoBehaviour
         //Plays celebrationAnimation.
       //  Celebrate(RetreiveCurrentBallTile());
 
+
+
         holeNum++;
 
         //Making next hole level.
@@ -954,6 +968,10 @@ public class HexGrid : MonoBehaviour
 
         holeSpawnRow = (int)currentBallTile.GetCoordinates().y-(holeStartRow + ((mapHeight+1) - holeGen.Item2));
 
+        Debug.Log("Next hole: " + nextHole);
+
+        //Updating total score UI
+        gameUIManager.CompleteHole();
 
 
         if (holeNum > 0)
