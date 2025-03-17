@@ -18,8 +18,13 @@ public class FairwayHex : MonoBehaviour, ITile
     public float upperBounds;
     Vector2 camBounds;
 
+    private bool mapShifting;
+
+
     void Start()
     {
+        mapShifting = false;
+
         grid = GameObject.FindGameObjectWithTag("MapBuilder").GetComponent<HexGrid>();
         cam = GameObject.FindGameObjectWithTag("CameraWorldBuilder").GetComponent<Camera>();
 
@@ -33,7 +38,7 @@ public class FairwayHex : MonoBehaviour, ITile
     // Update is called once per frame
     void Update()
     {
-        CheckDespawn();
+       CheckDespawn();
     }
 
     public void SetUpperBounds(float height)

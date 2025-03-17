@@ -20,16 +20,19 @@ public class InputController : MonoBehaviour
     public static event Action<Vector3> OnTouchPressDownPosition;
     public static event Action<Vector3> OnTouchPressUpPosition;
 
+
+    private Action<InputAction.CallbackContext> touchPositionDelegate;
+
     private void Awake()
     {
         _actions = new InputSystem_Actions();
-        
+        _mainCamera = Camera.main;
     }
 
 
     private void Start()
     {
-        _mainCamera = Camera.main;
+       
         firstPress = false;
         _actions.Touch.TouchPress.started += ctx => TouchPress(ctx);
         _actions.Touch.TouchPress.canceled += ctx => EndPress(ctx);
@@ -66,14 +69,17 @@ public class InputController : MonoBehaviour
         if (context.started)
         {
             _isDragging = true;
-           
+
             //  _offset = transform.position - ScreenToWorld(touchPos);
             //Debug.Log("Dragging!");
-           // OnTouchPressDownPosition?.Invoke(worldPos);
-            _actions.Touch.TouchPosition.performed += ctx => TouchPosition(ctx);
+            // OnTouchPressDownPosition?.Invoke(worldPos);
+
+            touchPositionDelegate = TouchPosition;
+
+            //   _actions.Touch.TouchPosition.performed += ctx => TouchPosition(ctx);
+            _actions.Touch.TouchPosition.performed += touchPositionDelegate;
 
 
-   
 
         }
         else if (context.canceled)
@@ -85,9 +91,9 @@ public class InputController : MonoBehaviour
 
     public void EndPress(InputAction.CallbackContext context)
     {
-      //  Debug.Log("EndPress.");
-        _actions.Touch.TouchPosition.performed -= ctx => TouchPosition(ctx);
-
+        //  Debug.Log("EndPress.");
+        //_actions.Touch.TouchPosition.performed -= ctx => TouchPosition(ctx);
+        _actions.Touch.TouchPosition.performed -= touchPositionDelegate;
 
         Vector2 touchPos = _actions.Touch.TouchPosition.ReadValue<Vector2>();
         Vector3 worldPos = ScreenToWorld(touchPos);

@@ -64,12 +64,14 @@ public class HexGrid : MonoBehaviour
 
     [SerializeField] GameObject[] celebrationSprites = new GameObject[6];
     [SerializeField] private GameUIManager gameUIManager;
+    float previousPositionY = 0f;
 
-    
 
 
     void Start()
     {
+
+    
         gameUIManager = GameObject.FindGameObjectWithTag("InputController").GetComponent<GameUIManager>();
 
         parOffset = 0;
@@ -210,13 +212,18 @@ public class HexGrid : MonoBehaviour
         }
 
         //To adjust for holes, the movement would have to be adjusted (based on full tile size and number of tiles to be shifted)
+        previousPositionY = movingContainer.transform.position.y;
+
+        movingContainer.transform.SetParent(null, true);
+
 
         isMoving = true;
-
+        DOTween.Kill(movingContainer.transform);
         movingContainer.transform.DOMove(new Vector3(0, -(tileSize * parOffset), 0), 1.5f)
           .SetEase(Ease.InOutCubic)
           .OnComplete(() =>
           {
+             
 
               Invoke(nameof(OnShiftCompletion), 0.1f);
               
@@ -245,6 +252,7 @@ public class HexGrid : MonoBehaviour
        0
         );
 
+        RealignMap();
 
         foreach (GameObject obj in activeTiles)
         {
@@ -265,6 +273,40 @@ public class HexGrid : MonoBehaviour
 
 
         Debug.Log("Number of Rows Moved: " + numberOfRowsMoved);
+
+    }
+
+
+    private void RealignMap()
+    {
+
+        float tile0Y = activeTiles[0].transform.position.y;
+        float tile1Y = activeTiles[1].transform.position.y;
+
+        Debug.Log($"Tile 0 Y Position: {tile0Y}, Tile 1 Y Position: {tile1Y}");
+
+        // Find the tile with the lowest Y position
+        float lowestY = Mathf.Min(tile0Y, tile1Y);
+
+        if (lowestY < -5.00000f)
+        {
+
+
+
+            float repositionDistance = -5 - lowestY;
+            Debug.Log("Remapping by " + repositionDistance);
+
+            for (int i = 0; i < activeTiles.Count; i++)
+            {
+
+                activeTiles[i].transform.position = activeTiles[i].transform.position + new Vector3(0,repositionDistance,0);
+
+            }
+
+
+
+        }
+
 
     }
 
