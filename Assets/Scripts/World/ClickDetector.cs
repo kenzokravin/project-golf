@@ -280,7 +280,7 @@ public class ClickDetector : MonoBehaviour
 
     private void OnPressDownPosition(Vector3 position)
     {
-        Debug.Log("Received Touch Down: " + position);
+        //Debug.Log("Received Touch Down: " + position);
 
         //Might have to check whether the gamestate is playing or not (or that the press is in the valid play area)
         //This would allow for UI to determine whether it has been struck.
@@ -307,7 +307,7 @@ public class ClickDetector : MonoBehaviour
 
     private void OnPressUpPosition(Vector3 position)
     {
-        Debug.Log("Received Touch Up: " + position);
+       // Debug.Log("Received Touch Up: " + position);
         // Use the position here
 
         //Where we would confirm the shot.

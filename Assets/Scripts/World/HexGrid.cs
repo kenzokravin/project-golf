@@ -60,6 +60,7 @@ public class HexGrid : MonoBehaviour
     public Vector2 nextHole;
     public int parOffset;
     public int holeSpawnRow;
+    [SerializeField] private int numberOfRowsMoved = 0;
 
     [SerializeField] GameObject[] celebrationSprites = new GameObject[6];
     [SerializeField] private GameUIManager gameUIManager;
@@ -113,15 +114,14 @@ public class HexGrid : MonoBehaviour
 
                 if (yCoord > 0)
                 {
-                    if(holeNum != 0)
-                    {
+                  
                         //This drops the y value of the current tiles, so y=0 is always the bottom-most tile.
                         //It also calls to spawn the next row.
                         ReassignCoords();
 
                         highestCoordPooled++;
 
-                    }
+                    
                 }
 
                 activeTiles.RemoveAt(i);
@@ -155,8 +155,7 @@ public class HexGrid : MonoBehaviour
         }
 
 
-      
-        
+
         Debug.Log("Reassigning");
         SpawnNextRow();
         
@@ -187,7 +186,7 @@ public class HexGrid : MonoBehaviour
 
         }
 
-
+        numberOfRowsMoved++;
 
     }
 
@@ -218,21 +217,58 @@ public class HexGrid : MonoBehaviour
           .SetEase(Ease.InOutCubic)
           .OnComplete(() =>
           {
-                // Unparent objects
-                foreach (GameObject obj in activeTiles)
-              {
-                  obj.transform.SetParent(gameObject.transform);
-              }
 
-                // Destroy the container
-                Destroy(movingContainer);
-               movingContainer = null;
+              Invoke(nameof(OnShiftCompletion), 0.1f);
+              
 
-              isMoving = false;
-              ReassignCoords();
 
           });
     }
+
+    private  void OnShiftCompletion()
+    {
+
+        if(activeTiles[0].transform.position.y == -5)
+        {
+            ReassignCoords();
+
+        }
+
+
+
+        // ReassignCoords();
+
+
+        movingContainer.transform.position = new Vector3(
+        0,
+        -(tileSize * parOffset),
+       0
+        );
+
+
+        foreach (GameObject obj in activeTiles)
+        {
+            obj.transform.SetParent(gameObject.transform);
+        }
+
+
+        // Destroy the container
+        Destroy(movingContainer);
+
+      
+        movingContainer = null;
+
+        isMoving = false;
+
+
+
+
+
+        Debug.Log("Number of Rows Moved: " + numberOfRowsMoved);
+
+    }
+
+
 
     private void CheckWaterValue(Vector3 hexCoords, int xCoord, int yCoord)
     {
@@ -916,7 +952,7 @@ public class HexGrid : MonoBehaviour
        // ballController.Jump(currentBallTile,chosenHex);
 
         ITile tileScript = currentBallTile.GetComponentInChildren<ITile>();
-        tileScript.GetCoordinates();
+      //  tileScript.GetCoordinates();
 
 
 
@@ -934,53 +970,73 @@ public class HexGrid : MonoBehaviour
 
         }
        
-
-       // currentBallTile = chosenHex;
-
-      //  ballController.SetHexGrid(currentBallTile);
-
     }
 
     private void HoleCycle()
     {
-        //Plays celebrationAnimation.
-      //  Celebrate(RetreiveCurrentBallTile());
-
-
-
+        numberOfRowsMoved = 0;
+ 
         holeNum++;
 
         //Making next hole level.
         //It is here where we increase hole level, play success animations, calculate next hole coords and generate the next hole.
 
-        int holeStartRow = Random.Range(5, 7);
+        int holeStartRow = Random.Range(5, 5);
+
 
         //here we could get the row of the next tee off, then find the position of the current hole tile and then the yCoord and then multiply by tile size.
         ITile currentBallTile = holeTile.GetComponentInChildren<ITile>();
 
-        parOffset = (int)currentBallTile.GetCoordinates().y - holeStartRow;
+        parOffset = 0;
 
-        holeSpawnRow = mapHeight - holeStartRow;
+        
+        //----------
+        //Issue here is that it is running a double spawn at the end. Not sure why.
+        //Could have something to do with the hole or paroffset issues.
+       //Also, The next hole is +1 y above what it should be.
+
+        //How far it has to move for the new hole regen  given the randomization of the next hole's tee off yCoord.
+        parOffset = (int)currentBallTile.GetCoordinates().y - (holeStartRow);
+
+       // holeSpawnRow = mapHeight - holeStartRow;
 
 
         var holeGen = GenerateHoleCoords(mapWidth);
         nextHole = new Vector2(holeGen.Item1, holeGen.Item2);
 
-        holeSpawnRow = (int)currentBallTile.GetCoordinates().y-(holeStartRow + ((mapHeight+1) - holeGen.Item2));
+        nextHole = new Vector2(7, 22);
 
-        Debug.Log("Next hole: " + nextHole);
+        // holeSpawnRow = (int)currentBallTile.GetCoordinates().y-(holeStartRow + ((mapHeight) - holeGen.Item2));
+        holeSpawnRow = (int)currentBallTile.GetCoordinates().y - (holeStartRow + ((mapHeight + 1) - (int)nextHole.y));
+
+        if (holeGen.Item2 % 2 == 0)
+        {
+            Debug.Log("Compensating for rows.");
+
+        } else
+        {
+
+        }
+
+
+        if(holeGen.Item1 % 2 != 1)
+        {
+
+
+        }
+
+
+        Debug.Log("Next hole: " + nextHole + ", for hole Num: " + holeNum);
+        Debug.Log("Hole Spawn Row: " + holeSpawnRow + " and parOffset: " + parOffset);
 
         //Updating total score UI
         gameUIManager.CompleteHole();
 
 
-        if (holeNum > 0)
-        {
-          //  ShiftHexPositions();
-          MoveHexes();
+        MoveHexes();
             //Move the holes
 
-        }
+     
 
     }
 
@@ -991,6 +1047,8 @@ public class HexGrid : MonoBehaviour
 
         for(int i = 0;i < activeTiles.Count; i++)
         {
+
+        
 
             ITile tile = activeTiles[i].GetComponentInChildren<ITile>();
 

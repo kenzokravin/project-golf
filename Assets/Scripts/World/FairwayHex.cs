@@ -26,7 +26,7 @@ public class FairwayHex : MonoBehaviour, ITile
         Vector2 camBounds = GetCameraBounds();
 
        // Debug.Log("Cam Bounds for pool despawn: " + -(camBounds.y * .5f));
-        lowerBounds = -(camBounds.y * .5f);
+        lowerBounds = -(camBounds.y * .5f) - 0.01f;
        // upperBounds = (camBounds.y * .5f);
     }
 

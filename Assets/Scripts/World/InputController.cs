@@ -68,7 +68,7 @@ public class InputController : MonoBehaviour
             _isDragging = true;
            
             //  _offset = transform.position - ScreenToWorld(touchPos);
-            Debug.Log("Dragging!");
+            //Debug.Log("Dragging!");
            // OnTouchPressDownPosition?.Invoke(worldPos);
             _actions.Touch.TouchPosition.performed += ctx => TouchPosition(ctx);
 
@@ -79,13 +79,13 @@ public class InputController : MonoBehaviour
         else if (context.canceled)
         {
             _isDragging = false;
-            Debug.Log("No Drag!");
+          //  Debug.Log("No Drag!");
         }
     }
 
     public void EndPress(InputAction.CallbackContext context)
     {
-        Debug.Log("EndPress.");
+      //  Debug.Log("EndPress.");
         _actions.Touch.TouchPosition.performed -= ctx => TouchPosition(ctx);
 
 
