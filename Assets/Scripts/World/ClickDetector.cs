@@ -34,7 +34,8 @@ public class ClickDetector : MonoBehaviour
     public Vector3 startTouchPosition;
     public Vector3 targetPosition;
     [SerializeField] GameObject targetCrosshair;
-    [SerializeField] GameObject activeCrosshair;
+    [SerializeField] private GameObject activeCrosshair;
+    [SerializeField] private GameObject counterCrosshair;
     public Vector3 tileheightOffset = new Vector3 (0,0,-.25f);
 
     private bool active;
@@ -50,7 +51,10 @@ public class ClickDetector : MonoBehaviour
     public int resolution = 20; // Number of points for smoothness
     public float arcHeight = 2f; // How high the arc should go
 
-    public float hitTime = 1f; //How long the player has to hit the ball.
+    [SerializeField] float hitTime = 1f; //How long the player has to hit the ball.
+    public float hitIncrements;
+    private int hitIteration;
+
     public float hitTolerance = .5f; //How lenient the hit is.
     public float minPower = 0.3f;         // Minimum shot power (if mistimed)
     public float maxPower = 1.0f;
@@ -75,6 +79,8 @@ public class ClickDetector : MonoBehaviour
 
     private void Start()
     {
+        hitIncrements = hitTime / 3f;
+        hitIteration = 0;
         gameUIManager = GameObject.FindGameObjectWithTag("InputController").GetComponent<GameUIManager>();
         _mainCamera = Camera.main;
         hexGrid = GetComponent<HexGrid>();
@@ -202,6 +208,8 @@ public class ClickDetector : MonoBehaviour
         relativeTilePosition = startingTile.transform.position + (invertedCrossHair - startTouchPosition);
 
         activeCrosshair.transform.position = relativeTilePosition + tileheightOffset;
+
+        CalculateShotTimer();
 
        // Debug.DrawLine(startingTile.transform.position, relativeTilePosition, Color.blue, 0.2f);
     }
@@ -486,6 +494,8 @@ public class ClickDetector : MonoBehaviour
         activeCrosshair.SetActive(true);
         activeCrosshair.transform.position = position;
 
+        hitIteration = 0;
+        hitIncrements = hitTime / 3f;
         shotDistance = 0f;
         holdTime = 0f;
         crosshairAiming = position;
@@ -555,8 +565,8 @@ public class ClickDetector : MonoBehaviour
 
         //Calculate hit works, just need to ensure the hole tile remains active.
         // CalculateHit(hexGrid.RetreiveCurrentBallTile(), clickedTile);
-    
 
+        activeCrosshair.SetActive(false);
 
         ball.Jump(hexGrid.RetreiveCurrentBallTile(),targetTile);
 
@@ -576,16 +586,50 @@ public class ClickDetector : MonoBehaviour
 
     private void ReleaseShot()
     {
+        //---------This function determines the hit quality, using the holding time to determine distance and potentially accuracy----------
+      
 
-        targetTile = hexGrid.GetHexFromWorldPosition(activeCrosshair.transform.position);
 
+        float distanceQuality = CalculatePower(holdTime);
 
-       // float distanceQuality = CalculatePower(holdTime);
+        Vector2 hitVector = activeCrosshair.transform.position * distanceQuality;
+        targetTile = hexGrid.GetHexFromWorldPosition(hitVector);
+
+        Debug.Log("Hit performed, success of: " + distanceQuality + " with hitVector of: " + hitVector);
         Hit();
 
 
 
     }
+
+    private void CalculateShotTimer()
+    {
+
+        float difference = holdTime - hitIncrements;
+
+        if (difference > 0 && hitIteration < 3)
+        {
+            //Increase size of inner aim.
+
+
+
+
+            hitIncrements += hitTime / 3;
+            hitIteration++;
+            Debug.Log("Incrementing.");
+        }
+
+        if(hitIteration >= 3)
+        {
+
+            Debug.Log("HITDONE");
+
+        }
+
+
+    }
+
+
 
     private float CalculatePower(float holdDuration)
     {

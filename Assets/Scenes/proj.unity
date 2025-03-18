@@ -2139,12 +2139,20 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 458230067}
     - target: {fileID: 5770517783905326252, guid: b5a12bd8bea285e43a7db8b1c5a1d2b1, type: 3}
+      propertyPath: hitTime
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5770517783905326252, guid: b5a12bd8bea285e43a7db8b1c5a1d2b1, type: 3}
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5770517783905326252, guid: b5a12bd8bea285e43a7db8b1c5a1d2b1, type: 3}
       propertyPath: resolution
       value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 5770517783905326252, guid: b5a12bd8bea285e43a7db8b1c5a1d2b1, type: 3}
+      propertyPath: hitTolerance
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 5770517783905326252, guid: b5a12bd8bea285e43a7db8b1c5a1d2b1, type: 3}
       propertyPath: lineRenderer

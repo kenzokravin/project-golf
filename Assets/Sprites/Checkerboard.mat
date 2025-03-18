@@ -52,7 +52,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _FlowSpeed: 0.01
-    - _Hue: 446
+    - _Hue: 438.73
     - _QueueControl: 0
     - _QueueOffset: 0
     - _Scale: 3

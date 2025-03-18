@@ -1046,8 +1046,6 @@ public class HexGrid : MonoBehaviour
         var holeGen = GenerateHoleCoords(mapWidth);
         nextHole = new Vector2(holeGen.Item1, holeGen.Item2);
 
-        nextHole = new Vector2(7, 22);
-
         // holeSpawnRow = (int)currentBallTile.GetCoordinates().y-(holeStartRow + ((mapHeight) - holeGen.Item2));
         holeSpawnRow = (int)currentBallTile.GetCoordinates().y - (holeStartRow + ((mapHeight + 1) - (int)nextHole.y));
 
