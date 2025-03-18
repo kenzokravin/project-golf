@@ -10,6 +10,7 @@ TagManager:
   - MovingContainer
   - InputController
   - GameUI
+  - Target
   layers:
   - Default
   - TransparentFX
@@ -17,7 +18,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Targeting
   - 
   - 
   - 
@@ -46,6 +47,9 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Target
+    uniqueID: 1815396397
     locked: 0
   m_RenderingLayers:
   - Default

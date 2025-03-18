@@ -1373,13 +1373,25 @@ public class HexGrid : MonoBehaviour
     }
 
 
-    private void GenerateClouds()
+    public GameObject GetHexFromWorldPosition(Vector3 position)
     {
+        GameObject retHex = null;
+        float smallestDist = 1000f;
 
+        for(int i = 0; i < activeTiles.Count; i++)
+        {
 
+            float distance = Vector3.Distance(activeTiles[i].transform.position,position);
 
+            if (distance < smallestDist)
+            {
+                smallestDist = distance;
+                retHex = activeTiles[i];
 
+            }
+        }
 
+        return retHex;
     }
 
 

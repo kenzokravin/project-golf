@@ -2,6 +2,12 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Burst;
+using Unity.Jobs;
+using Unity.Collections;
+using Unity.Mathematics;
+
+
 public class ClickDetector : MonoBehaviour
 {
     private bool _isDragging;
@@ -27,6 +33,9 @@ public class ClickDetector : MonoBehaviour
     public List<Vector2> targetNeighbours;
     public Vector3 startTouchPosition;
     public Vector3 targetPosition;
+    [SerializeField] GameObject targetCrosshair;
+    [SerializeField] GameObject activeCrosshair;
+    public Vector3 tileheightOffset = new Vector3 (0,0,-.25f);
 
     private bool active;
     private ITile ballTileScript;
@@ -74,6 +83,8 @@ public class ClickDetector : MonoBehaviour
         lineRenderer.startWidth = 0.1f;
         lineRenderer.endWidth = 0.05f;
 
+        activeCrosshair = Instantiate(targetCrosshair);
+        activeCrosshair.SetActive(false);
        
 
     }
@@ -84,9 +95,21 @@ public class ClickDetector : MonoBehaviour
 
         if(_isDragging)
         {
-            AimShot();
+            AimCrosshair();
+            //AimShotOriginal();
             holdTime += Time.deltaTime;
         }
+
+        if(_isDragging)
+        {
+
+
+
+
+        }
+
+
+
 
         if (Input.GetMouseButtonDown(0)) // Left-click
         {
@@ -163,9 +186,188 @@ public class ClickDetector : MonoBehaviour
     //if closer, switch active hex, get neighbours and compare distances again.
 
 
+    private void AimCrosshair()
+    {
+
+        Vector3 invertedCrossHair = startTouchPosition + (startTouchPosition - crosshairAiming);
+
+
+
+        float distanceFromStart = Vector3.Distance(targetPosition, invertedCrossHair);
+
+        Vector3 relativeTilePosition = Vector3.zero;
+
+        
+
+        relativeTilePosition = startingTile.transform.position + (invertedCrossHair - startTouchPosition);
+
+        activeCrosshair.transform.position = relativeTilePosition + tileheightOffset;
+
+       // Debug.DrawLine(startingTile.transform.position, relativeTilePosition, Color.blue, 0.2f);
+    }
+
+
+
+
+
+
+
+    private void AimShot()
+    {
+        if (hexShift)
+        {
+            targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
+            if (targetNeighbours == null || targetNeighbours.Count == 0)
+            {
+                Debug.LogError("No valid neighbors found.");
+                return;
+            }
+            hexShift = false;
+        }
+
+        Vector3 invertedCrossHair = startTouchPosition + (startTouchPosition - crosshairAiming);
+        int neighborCount = targetNeighbours.Count;
+
+        float3 invertedCrossFloat = invertedCrossHair;
+
+        NativeArray<float2> nativeNeighbors = new NativeArray<float2>(neighborCount, Allocator.TempJob);
+        NativeArray<float3> neighborPositions = new NativeArray<float3>(neighborCount, Allocator.TempJob);
+        NativeArray<float> distances = new NativeArray<float>(neighborCount, Allocator.TempJob);
+
+        for (int i = 0; i < neighborCount; i++)
+        {
+            nativeNeighbors[i] = targetNeighbours[i];
+            GameObject neighborTile = hexGrid.GetHex((int)targetNeighbours[i].x, (int)targetNeighbours[i].y);
+            if (neighborTile != null)
+            {
+                neighborPositions[i] = neighborTile.transform.position;
+            }
+            else
+            {
+                neighborPositions[i] = math.INFINITY; // Prevent selecting null tiles
+            }
+        }
+
+        FindClosestTileJob job = new FindClosestTileJob
+        {
+            invertedCrossHair = invertedCrossFloat,
+            targetPosition = targetPosition,
+            neighbors = nativeNeighbors,
+            neighborPositions = neighborPositions,
+            distances = distances
+        };
+
+        JobHandle jobHandle = job.Schedule(neighborCount, 1);
+        jobHandle.Complete();
+
+        // Find the best tile with the minimum distance
+        int bestIndex = -1;
+        float minDistance = float.MaxValue;
+        for (int i = 0; i < neighborCount; i++)
+        {
+            if (distances[i] < minDistance)
+            {
+                minDistance = distances[i];
+                bestIndex = i;
+            }
+        }
+
+        if (bestIndex != -1)
+        {
+            GameObject bestTile = hexGrid.GetHex((int)nativeNeighbors[bestIndex].x, (int)nativeNeighbors[bestIndex].y);
+            if (bestTile != null)
+            {
+                targetTile = bestTile;
+                previousTile = bestTile;
+                targetPosition = targetPosition + (bestTile.transform.position - previousTile.transform.position);
+                hexShift = true;
+            }
+        }
+
+        // Dispose of NativeArrays
+        nativeNeighbors.Dispose();
+        neighborPositions.Dispose();
+        distances.Dispose();
+    }
+
+
+    private void AimShotCustom()
+    {
+
+        if (hexShift)
+        {
+            if (hexGrid.GetNeighbourListCoordinates(previousTile) == null)
+            {
+                Debug.LogError("previousTile is null! Aborting AimShot.");
+                return;
+            }
+            // DrawTrajectory(startingTile.transform.position, targetTile.transform.position);
+            targetNeighbours = hexGrid.GetNeighbourListCoordinates(previousTile);
+            hexShift = false;
+
+        }
+
+        //Inverting the  crosshair for pullback aiming.
+        Vector3 invertedCrossHair = startTouchPosition + (startTouchPosition - crosshairAiming);
+
+
+
+        float distanceFromStart = Vector3.Distance(targetPosition, invertedCrossHair);
+
+        Vector3 relativeTilePosition = Vector3.zero;
+
+        // Debug.DrawLine(previousTile.transform.position, startTouchPosition, Color.blue, 0.2f); // Previous Tile -> Start Position
+        // Debug.DrawLine(startTouchPosition, invertedCrossHair, Color.red, 0.2f); //perfect.
+
+
+
+        //Converting vectors to gameObjs, then checking whether the distance between the crosshair and the tile is smaller than the distance from the cross hair and previous tile.
+        for (int i = 0; i < targetNeighbours.Count; i++)
+        {
+
+            GameObject currentTile = hexGrid.GetHex((int)targetNeighbours[i].x, (int)targetNeighbours[i].y);
+
+            if (currentTile == null)
+            {
+                Debug.LogWarning($"Hex at {targetNeighbours[i].x}, {targetNeighbours[i].y} is null. Skipping.");
+                continue; // Skip this iteration if the tile doesn't exist
+            }
+
+            //Translating the tile position to the clicked target, so user can click anywhere and pull back and it maps directly.
+            relativeTilePosition = targetPosition + (currentTile.transform.position - previousTile.transform.position);
+
+
+            //    Debug.DrawLine(previousTile.transform.position, currentTile.transform.position, Color.green, 0.2f); // Previous Tile -> Current Tile
+            //  Debug.DrawLine(startTouchPosition, relativeTilePosition, Color.yellow, 0.2f); // Start Position -> Relative Tile Position
+
+
+            if (Vector3.Distance(relativeTilePosition, invertedCrossHair) < distanceFromStart)
+            {
+
+                // Debug.Log("Relative Position: " + relativeTilePosition);
+                targetTile = currentTile;
+                previousTile = currentTile;
+                targetPosition = relativeTilePosition;
+
+
+
+                ITile currentTileScript = currentTile.GetComponentInChildren<ITile>();
+
+                //   shotDistance = pathfinder.GetPathLength(path);
+
+
+                hexShift = true;
+            }
+
+        }
+
+
+    }
+
+
 
     //To make shot faster, could set it so it works off position if there is certain speed?
-    private void AimShot()
+    private void AimShotOriginal()
     {
 
             if(hexShift)
@@ -190,8 +392,10 @@ public class ClickDetector : MonoBehaviour
 
         Vector3 relativeTilePosition = Vector3.zero;
 
-       // Debug.DrawLine(previousTile.transform.position, startTouchPosition, Color.blue, 0.2f); // Previous Tile -> Start Position
-       // Debug.DrawLine(startTouchPosition, invertedCrossHair, Color.red, 0.2f); //perfect.
+        // Debug.DrawLine(previousTile.transform.position, startTouchPosition, Color.blue, 0.2f); // Previous Tile -> Start Position
+        // Debug.DrawLine(startTouchPosition, invertedCrossHair, Color.red, 0.2f); //perfect.
+
+
 
         //Converting vectors to gameObjs, then checking whether the distance between the crosshair and the tile is smaller than the distance from the cross hair and previous tile.
         for (int i = 0; i < targetNeighbours.Count; i++)
@@ -225,10 +429,6 @@ public class ClickDetector : MonoBehaviour
 
                 ITile currentTileScript = currentTile.GetComponentInChildren<ITile>();
 
-
-               // List<ITile> path = pathfinder.FindPath(Mathf.RoundToInt(ballTileScript.GetCoordinates().x), Mathf.RoundToInt(ballTileScript.GetCoordinates().y), Mathf.RoundToInt(currentTileScript.GetCoordinates().x), Mathf.RoundToInt(currentTileScript.GetCoordinates().y));
-
-
              //   shotDistance = pathfinder.GetPathLength(path);
 
 
@@ -237,10 +437,6 @@ public class ClickDetector : MonoBehaviour
 
             }
 
-
-
-
-        
 
     }
 
@@ -287,7 +483,9 @@ public class ClickDetector : MonoBehaviour
 
         //Setting startingTile as the current Ball Tile.
 
-     
+        activeCrosshair.SetActive(true);
+        activeCrosshair.transform.position = position;
+
         shotDistance = 0f;
         holdTime = 0f;
         crosshairAiming = position;
@@ -371,15 +569,18 @@ public class ClickDetector : MonoBehaviour
 
 
 
+
+
+
     }
 
     private void ReleaseShot()
     {
 
-       
+        targetTile = hexGrid.GetHexFromWorldPosition(activeCrosshair.transform.position);
 
 
-        float distanceQuality = CalculatePower(holdTime);
+       // float distanceQuality = CalculatePower(holdTime);
         Hit();
 
 
@@ -419,4 +620,27 @@ public class ClickDetector : MonoBehaviour
 
 
 
+}
+
+
+
+
+[BurstCompile]
+public struct FindClosestTileJob : IJobParallelFor
+{
+    [ReadOnly] public float3 invertedCrossHair;
+    [ReadOnly] public float3 targetPosition;
+    [ReadOnly] public NativeArray<float2> neighbors;
+    [ReadOnly] public NativeArray<float3> neighborPositions;
+
+    [WriteOnly] public NativeArray<float> distances;
+
+    public void Execute(int index)
+    {
+        Vector3 relativeTilePosition = targetPosition + (neighborPositions[index] - targetPosition);
+        distances[index] = Vector3.Distance(relativeTilePosition, invertedCrossHair);
+
+        
+
+    }
 }
